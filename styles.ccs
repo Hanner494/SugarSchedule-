@@ -1,0 +1,196 @@
+:root {
+  /* Farben: Minze (Grund) + Braun (Akzent) */
+  --mint-50: #f2fbf7;
+  --mint-100: #e5f7ef;
+  --mint-300: #b9ebd7;
+  --mint-500: #7ed9bb;
+  --mint-600: #58c4a1;
+  --mint-700: #3aa586;
+
+  --brown-300: #c6a58b;
+  --brown-500: #8b5e3c;
+  --brown-700: #5b3b24;
+
+  --bg: var(--mint-50);
+  --surface: #ffffff;
+  --surface-alt: var(--mint-100);
+  --text: #21302b;
+  --muted: #5c7069;
+
+  --accent: var(--brown-500);
+  --accent-soft: var(--brown-300);
+
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+
+  --shadow-sm: 0 4px 14px rgba(34, 50, 43, 0.08);
+  --shadow-md: 0 8px 24px rgba(34, 50, 43, 0.12);
+
+  --badge-normal: var(--mint-600);
+  --badge-sub: #cf9b66;     /* warmes braun-orange für Vertretung */
+  --badge-cancel: #8aa39a;  /* entsättigtes grün-grau für Ausfall */
+}
+
+/* Basis */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: var(--text);
+  background:
+    radial-gradient(18px 18px at 16px 16px, rgba(126, 217, 187, 0.15) 1px, transparent 1px),
+    linear-gradient(180deg, var(--bg), var(--mint-100));
+  min-height: 100vh;
+}
+
+/* Kopfbereich */
+.app-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--mint-300);
+  box-shadow: var(--shadow-sm);
+  position: sticky; top: 0; z-index: 10;
+}
+.brand {
+  font-weight: 800; letter-spacing: .3px; font-size: 20px;
+  color: var(--accent);
+}
+.controls button {
+  margin-left: 8px; border: 0; border-radius: 999px; padding: 8px 12px;
+  background: linear-gradient(135deg, var(--accent), var(--brown-700));
+  color: #fff; cursor: pointer; box-shadow: var(--shadow-sm);
+}
+.controls button:hover { filter: brightness(1.05); }
+
+/* Layout */
+.app-main {
+  display: grid; grid-template-columns: 260px 1fr; gap: 16px; padding: 16px;
+}
+.sidebar, .timetable {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--mint-300);
+  box-shadow: var(--shadow-sm);
+  padding: 12px;
+}
+.hint { color: var(--muted); }
+
+/* Timetable Kopf */
+.week-controls {
+  display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+}
+.week-label {
+  font-size: 20px; font-weight: 800; color: var(--accent);
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: 100px repeat(5, 1fr);
+  gap: 10px;
+}
+.cell {
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  min-height: 82px; padding: 8px;
+  border: 2px dashed rgba(91, 59, 36, .15);  /* braun-akzent, dezent */
+  position: relative;
+}
+.cell--time, .cell--head {
+  background: var(--surface);
+  border: 2px solid rgba(91, 59, 36, .18);
+}
+.cell--time {
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: var(--accent);
+}
+.cell--head {
+  display: flex; align-items: center; justify-content: center; min-height: 48px;
+  color: var(--accent); font-weight: 800;
+}
+
+/* Dropzone */
+.slot-dropzone {
+  position: absolute; inset: 6px; border-radius: 12px;
+}
+.slot-dropzone.dragover {
+  outline: 3px dashed var(--accent);
+  outline-offset: -4px;
+}
+
+/* Karten */
+.card {
+  background: #fff;
+  border: 2px solid var(--mint-300);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 8px; margin: 4px 0; cursor: grab;
+}
+.card:active { cursor: grabbing; }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.card-title {
+  font-weight: 900; color: var(--brown-700);
+  display: flex; align-items: center; gap: 6px;
+}
+.card-title::before {
+  /* dezentes Emoji – Blatt als Hinweis auf “Mint” */
+  content: "🌿";
+  font-size: 16px;
+}
+.card-meta {
+  margin-top: 4px; color: var(--muted);
+  display: flex; gap: 12px; font-size: 14px; align-items: center;
+}
+.card-meta .teacher::before {
+  content: "👩‍🏫"; margin-right: 4px;
+}
+.card-meta .room::before {
+  content: "🏫"; margin-right: 4px;
+}
+.badges { display: flex; gap: 6px; }
+.badge {
+  display: inline-block; padding: 2px 8px; font-size: 12px; border-radius: 999px; color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.badge.normal { background: var(--badge-normal); }
+.badge.substitute { background: var(--badge-sub); }
+.badge.canceled { background: var(--badge-cancel); }
+
+/* Modal (übernimmt Struktur deiner vorhandenen Modals) */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.3);
+  display: grid; place-items: center; z-index: 999;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  width: min(620px, 92vw);
+  background: #fff; border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-md);
+  border: 2px solid var(--mint-300);
+}
+.modal-content h2 { margin: 0 0 10px 0; color: var(--accent); }
+.modal-content label { display: block; font-weight: 800; margin-top: 8px; color: var(--brown-700); }
+.modal-content input, .modal-content select {
+  width: 100%; padding: 10px; border-radius: 12px; border: 2px solid var(--mint-300); margin-top: 6px;
+  font: inherit; font-size: 16px; background: var(--surface-alt);
+}
+.modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+.modal-actions button {
+  border: none; border-radius: 999px; padding: 8px 14px; cursor: pointer; color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--brown-700));
+}
+
+/* Sticker/Sidebar (dezent) */
+.sticker-shelf { font-size: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.sticker-shelf::before {
+  content: "✨"; margin-right: 6px;
+}
+
+/* Responsiv */
+@media (max-width: 900px) {
+  .app-main { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 84px repeat(5, 1fr); }
+}
