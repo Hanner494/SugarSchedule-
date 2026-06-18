@@ -1,4 +1,4 @@
-// ---------- Konfiguration ----------
+// ===================== Konfiguration =====================
 const DAYS = ["Mo", "Di", "Mi", "Do", "Fr"];
 const DEFAULT_TIMES = [
   "08:00–08:45",
@@ -9,22 +9,22 @@ const DEFAULT_TIMES = [
   "12:20–13:05"
 ];
 
-const LS_CARDS = "sp_cards_v1";
-const LS_TIMES = "sp_times_v1";
-const LS_VAC  = "sp_vacation_date_v1";
+const LS_CARDS = "cozy_cards_v1";
+const LS_TIMES = "cozy_times_v1";
+const LS_VAC  = "cozy_vacation_date_v1";
 
-// ---------- State ----------
+// ===================== State =====================
 let TIMES = loadTimes() || [...DEFAULT_TIMES];
 let cards = loadCards();
 let currentEditId = null;
-let draggingSticker = null; // Emoji aus dem Regal
+let draggingSticker = null; // Emoji-Text aus dem Sticker-Regal
 
-// ---------- Seed-Daten ----------
+// Falls noch keine Karten existieren: Seed-Beispiele
 if (!cards.length) {
   cards = [
     mkCard("Mathe", "Fr. Müller", "201", "normal", false, 0, 0),
     mkCard("Deutsch", "Hr. König", "105", "substitute", false, 0, 1),
-    mkCard("Bio", "Fr. Li", "Bi2", "normal", false, 1, 2),
+    mkCard("Biologie", "Fr. Li", "Bio2", "normal", false, 1, 2),
     mkCard("Englisch", "Fr. Brown", "301", "canceled", false, 2, 3),
     mkCard("Sport", "Hr. Novak", "Halle", "normal", true, 3, 4),
     mkCard("Kunst", "Fr. Rossi", "Kunstraum", "normal", false, 4, 0),
@@ -32,35 +32,35 @@ if (!cards.length) {
   saveCards();
 }
 
-// ---------- Init ----------
+// ===================== Init =====================
 document.addEventListener("DOMContentLoaded", () => {
-  // Kopfdatum/Zeit
+  // Zeit/Datum
   updateNow();
   setInterval(updateNow, 1000);
 
-  // Grid aufbauen + rendern
+  // Grid aufbauen und rendern
   buildGrid();
   renderAll();
 
-  // Buttons
-  qs("#btnAddLesson").addEventListener("click", onAddCard);
-  qs("#btnReset").addEventListener("click", onReset);
+  // Header-Buttons
+  on("#btnAddLesson", "click", onAddCard);
+  on("#btnReset", "click", onReset);
 
   // Edit-Modal
-  qs("#btnCloseEdit").addEventListener("click", closeEdit);
-  qs("#btnSaveEdit").addEventListener("click", onSaveEdit);
-  qs("#btnDelete").addEventListener("click", onDeleteCard);
+  on("#btnCloseEdit", "click", closeEdit);
+  on("#btnSaveEdit", "click", onSaveEdit);
+  on("#btnDelete", "click", onDeleteCard);
 
-  // Times modal
-  qs("#btnEditTimes").addEventListener("click", openTimesEditor);
-  qs("#btnTimesCancel").addEventListener("click", closeTimes);
-  qs("#btnTimesSave").addEventListener("click", saveTimesFromEditor);
-  qs("#btnTimesAdd").addEventListener("click", addTimesRow);
+  // Zeiten-Modal
+  on("#btnEditTimes", "click", openTimesEditor);
+  on("#btnTimesCancel", "click", closeTimes);
+  on("#btnTimesSave", "click", saveTimesFromEditor);
+  on("#btnTimesAdd", "click", addTimesRow);
 
-  // Sticker Shelf Drag
+  // Sticker-Regal
   initStickerShelf();
 
-  // Pflanze und Ferien
+  // Ferien/Pflanze
   const vacInput = qs("#vacationDate");
   const savedVac = localStorage.getItem(LS_VAC);
   if (savedVac) vacInput.value = savedVac;
@@ -68,27 +68,36 @@ document.addEventListener("DOMContentLoaded", () => {
   updateVacation();
 });
 
-// ---------- Helpers ----------
+// ===================== Helpers =====================
 function qs(sel, root=document) { return root.querySelector(sel); }
 function qsa(sel, root=document) { return Array.from(root.querySelectorAll(sel)); }
+function on(sel, evt, handler, root=document) { const el = qs(sel, root); if (el) el.addEventListener(evt, handler); }
 function uid() { return "c_" + Math.random().toString(36).slice(2, 10); }
+
 function mkCard(subject, teacher, room, status, hasTest, dayIndex, timeIndex) {
   return { id: uid(), subject, teacher, room, status, hasTest, dayIndex, timeIndex, stickers: [] };
 }
 
-// ---------- Zeit/Datum ----------
+// ===================== Datum/Uhrzeit =====================
 function updateNow() {
   const now = new Date();
-  qs("#nowTime").textContent = now.toLocaleTimeString("de-DE");
-  qs("#todayDate").textContent = now.toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "2-digit", day: "2-digit" });
+  const time = now.toLocaleTimeString("de-DE");
+  const date = now.toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "2-digit", day: "2-digit" });
+  const tEl = qs("#nowTime");
+  const dEl = qs("#todayDate");
+  if (tEl) tEl.textContent = time;
+  if (dEl) dEl.textContent = date;
 }
 
-// ---------- Grid ----------
+// ===================== Grid und Rendering =====================
 function buildGrid() {
   const grid = qs("#grid");
-  // Kopfzeile (6 Zellen) existiert bereits in HTML. Wir fügen für jede Zeit eine Reihe.
+  if (!grid) return;
+
+  // In index.html existieren bereits 6 Kopfzellen (Zeit + Mo-Fr).
+  // Für jede Zeit fügen wir 1 Zeitspalte + 5 Tagesspalten hinzu.
   TIMES.forEach((t, ti) => {
-    // Zeit-Spalte
+    // Zeit-Spalte (links)
     const timeCell = document.createElement("div");
     timeCell.className = "cell cell--time";
     timeCell.textContent = t;
@@ -104,7 +113,6 @@ function buildGrid() {
       dz.dataset.dayIndex = d;
       dz.dataset.timeIndex = ti;
 
-      // Dropzone Events
       dz.addEventListener("dragover", onSlotDragOver);
       dz.addEventListener("dragleave", onSlotDragLeave);
       dz.addEventListener("drop", onSlotDrop);
@@ -116,7 +124,7 @@ function buildGrid() {
 }
 
 function renderAll() {
-  // Dropzonen leeren
+  // Alle Dropzonen leeren
   qsa(".slot-dropzone").forEach(dz => dz.innerHTML = "");
 
   // Karten platzieren
@@ -133,24 +141,18 @@ function createCardEl(card) {
   el.draggable = true;
   el.dataset.id = card.id;
 
+  // Draggen der Karte
   el.addEventListener("dragstart", onCardDragStart);
+  // Bearbeiten per Doppelklick
   el.addEventListener("dblclick", () => openEdit(card.id));
 
-  // Header
+  // Kopf mit Titel+Badge
   const header = document.createElement("div");
   header.className = "card-header";
 
   const title = document.createElement("div");
   title.className = "card-title";
   title.textContent = card.subject || "Fach";
-
-  // Badges
-  const badges = document.createElement("div");
-  badges.className = "badges";
-  const b = document.createElement("span");
-  b.className = "badge " + (card.status || "normal");
-  b.textContent = statusLabel(card.status);
-  badges.appendChild(b);
 
   if (card.hasTest) {
     const tf = document.createElement("span");
@@ -159,10 +161,17 @@ function createCardEl(card) {
     title.appendChild(tf);
   }
 
+  const badges = document.createElement("div");
+  badges.className = "badges";
+  const badge = document.createElement("span");
+  badge.className = "badge " + (card.status || "normal");
+  badge.textContent = statusLabel(card.status);
+  badges.appendChild(badge);
+
   header.appendChild(title);
   header.appendChild(badges);
 
-  // Meta
+  // Meta Infos
   const meta = document.createElement("div");
   meta.className = "card-meta";
   const t = document.createElement("span");
@@ -178,7 +187,7 @@ function createCardEl(card) {
   meta.appendChild(r);
   meta.appendChild(s);
 
-  // Sticker-Leiste
+  // Sticker-Leiste (bereits aufgeklebte)
   const stickerBar = document.createElement("div");
   stickerBar.className = "card-stickers";
   (card.stickers || []).forEach(emoji => {
@@ -190,11 +199,7 @@ function createCardEl(card) {
     stickerBar.appendChild(chip);
   });
 
-  el.appendChild(header);
-  el.appendChild(meta);
-  el.appendChild(stickerBar);
-
-  // Sticker-Drop (auf Karte)
+  // Sticker-Drop auf Karte
   el.addEventListener("dragover", (e) => {
     if (draggingSticker) e.preventDefault();
   });
@@ -204,6 +209,10 @@ function createCardEl(card) {
     addStickerToCard(card.id, draggingSticker);
     draggingSticker = null;
   });
+
+  el.appendChild(header);
+  el.appendChild(meta);
+  el.appendChild(stickerBar);
 
   return el;
 }
@@ -220,7 +229,7 @@ function findDropzone(dayIndex, timeIndex) {
   return document.querySelector(`.slot-dropzone[data-day-index="${dayIndex}"][data-time-index="${timeIndex}"]`);
 }
 
-// ---------- Drag & Drop: Karten ----------
+// ===================== Drag & Drop: Karten =====================
 let dragId = null;
 function onCardDragStart(e) {
   dragId = e.currentTarget.dataset.id;
@@ -239,10 +248,18 @@ function onSlotDrop(e) {
   e.preventDefault();
   const dz = e.currentTarget;
   dz.classList.remove("dragover");
-  const id = e.dataTransfer.getData("text/plain") || dragId;
+
+  // Sticker oder Karte?
+  const dropped = e.dataTransfer.getData("text/plain");
+  if (draggingSticker && dropped === draggingSticker) {
+    // Sticker auf Slot droppen: ignorieren (nur auf Karten erlaubt)
+    draggingSticker = null;
+    return;
+  }
+
+  const id = dropped || dragId;
   const dayIndex = parseInt(dz.dataset.dayIndex, 10);
   const timeIndex = parseInt(dz.dataset.timeIndex, 10);
-
   const idx = cards.findIndex(c => c.id === id);
   if (idx >= 0) {
     cards[idx].dayIndex = dayIndex;
@@ -252,7 +269,7 @@ function onSlotDrop(e) {
   }
 }
 
-// ---------- Sticker Shelf ----------
+// ===================== Sticker-Regal =====================
 function initStickerShelf() {
   qsa(".sticker").forEach(s => {
     s.addEventListener("dragstart", (e) => {
@@ -270,13 +287,13 @@ function addStickerToCard(cardId, emoji) {
   const idx = cards.findIndex(c => c.id === cardId);
   if (idx < 0) return;
   const set = new Set(cards[idx].stickers || []);
-  set.add(emoji); // doppelte vermeiden
+  set.add(emoji); // Duplikate vermeiden
   cards[idx].stickers = Array.from(set);
   saveCards();
   renderAll();
 }
 
-// ---------- Bearbeiten ----------
+// ===================== Bearbeiten (Modal) =====================
 function openEdit(id) {
   currentEditId = id;
   const card = cards.find(c => c.id === id);
@@ -319,7 +336,7 @@ function onDeleteCard() {
   closeEdit();
 }
 
-// ---------- Add/Reset ----------
+// ===================== Hinzufügen/Zurücksetzen =====================
 function onAddCard() {
   const newCard = mkCard("Neues Fach", "", "", "normal", false, 0, 0);
   cards.push(newCard);
@@ -338,35 +355,40 @@ function onReset() {
   location.reload();
 }
 
-// ---------- Zeiten-Editor ----------
+// ===================== Zeiten-Editor =====================
 function openTimesEditor() {
   const modal = qs("#timesModal");
   const editor = qs("#timesEditor");
-  editor.innerHTML = "";
+  if (!modal || !editor) return;
 
+  editor.innerHTML = "";
   TIMES.forEach((t) => editor.appendChild(timesRow(t)));
 
   modal.classList.remove("hidden");
 }
 function closeTimes() {
-  qs("#timesModal").classList.add("hidden");
+  const modal = qs("#timesModal");
+  if (modal) modal.classList.add("hidden");
 }
 function timesRow(value="") {
   const row = document.createElement("div");
   row.className = "times-row";
   row.innerHTML = `
     <input type="text" class="time-input" placeholder="z. B. 08:00–08:45" value="${value}">
-    <button class="btn-remove" title="Zeile entfernen">–</button>
+    <button class="btn btn-light btn-remove" title="Zeile entfernen">–</button>
   `;
   const btn = row.querySelector(".btn-remove");
   btn.addEventListener("click", () => row.remove());
   return row;
 }
 function addTimesRow() {
-  qs("#timesEditor").appendChild(timesRow(""));
+  const editor = qs("#timesEditor");
+  if (editor) editor.appendChild(timesRow(""));
 }
 function saveTimesFromEditor() {
-  const vals = qsa(".time-input", qs("#timesEditor")).map(i => i.value.trim()).filter(Boolean);
+  const editor = qs("#timesEditor");
+  if (!editor) return;
+  const vals = qsa(".time-input", editor).map(i => i.value.trim()).filter(Boolean);
   if (!vals.length) {
     alert("Bitte mindestens eine Zeit eintragen.");
     return;
@@ -374,11 +396,14 @@ function saveTimesFromEditor() {
   TIMES = vals;
   saveTimes(vals);
 
-  // Grid neu aufbauen
+  // Grid neu aufbauen: alles nach den 6 Kopfzellen entfernen
   const grid = qs("#grid");
-  while (grid.children.length > 6) grid.removeChild(grid.lastChild); // alles nach Kopf
-  buildGrid();
-  // Re-map ggf. timeIndex > neues TIMES.length abfangen:
+  if (grid) {
+    while (grid.children.length > 6) grid.removeChild(grid.lastChild);
+    buildGrid();
+  }
+
+  // Karten anpassen, falls timeIndex out-of-range ist
   cards.forEach(c => { if (c.timeIndex >= TIMES.length) c.timeIndex = TIMES.length - 1; });
   saveCards();
   renderAll();
@@ -386,10 +411,10 @@ function saveTimesFromEditor() {
   closeTimes();
 }
 
-// ---------- Ferien/Pflanze ----------
+// ===================== Ferien/Pflanze =====================
 function updateVacation() {
   const input = qs("#vacationDate");
-  const dStr = input.value || "";
+  const dStr = input ? input.value : "";
   if (dStr) localStorage.setItem(LS_VAC, dStr);
 
   const stem = qs("#plantStem");
@@ -400,26 +425,26 @@ function updateVacation() {
   const vac = dStr ? new Date(dStr + "T00:00:00") : null;
 
   if (!vac) {
-    stem.style.height = "16px";
-    flower.style.transform = "translateY(0)";
-    daysEl.textContent = "–";
+    if (stem) stem.style.height = "16px";
+    if (flower) flower.style.transform = "translateY(0)";
+    if (daysEl) daysEl.textContent = "–";
     return;
   }
 
   const diffDays = Math.ceil((vac - today) / (1000 * 60 * 60 * 24));
-  daysEl.textContent = Math.max(diffDays, 0);
+  if (daysEl) daysEl.textContent = Math.max(diffDays, 0);
 
-  const windowDays = 42; // 6 Wochen Fenster
+  const windowDays = 42; // 6 Wochen
   const clamped = Math.max(0, Math.min(windowDays, diffDays));
-  const progress = 1 - (clamped / windowDays); // 0..1 (nahe = größer)
+  const progress = 1 - (clamped / windowDays); // 0..1 (je näher, desto größer)
 
   // Höhe 16..140px
   const height = 16 + Math.round(progress * 124);
-  stem.style.height = height + "px";
-  flower.style.transform = `translateY(${Math.round(progress * -10)}px)`;
+  if (stem) stem.style.height = height + "px";
+  if (flower) flower.style.transform = `translateY(${Math.round(progress * -10)}px)`;
 }
 
-// ---------- Storage ----------
+// ===================== Storage =====================
 function loadCards() {
   try { return JSON.parse(localStorage.getItem(LS_CARDS) || "[]"); } catch (_) { return []; }
 }
