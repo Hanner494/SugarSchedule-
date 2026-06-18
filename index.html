@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Sweet Planner – Stundenplan</title>
+  <title>Stundenplan – Cozy Planner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Bubbly Font -->
@@ -12,20 +12,21 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="brand">Sweet Planner 🌸</div>
+    <div class="brand">Cozy Planner 🌿</div>
     <div class="now">
       <span id="todayDate">–</span>
       <span class="sep">•</span>
       <span id="nowTime">–:–:–</span>
     </div>
     <div class="actions">
-      <button id="btnEditTimes">Zeiten bearbeiten</button>
-      <button id="btnAddLesson">+ Stunde</button>
-      <button id="btnReset">Zurücksetzen</button>
+      <button id="btnEditTimes" class="btn">Zeiten bearbeiten</button>
+      <button id="btnAddLesson" class="btn">+ Stunde</button>
+      <button id="btnReset" class="btn btn-danger">Zurücksetzen</button>
     </div>
   </header>
 
   <main class="app-main">
+
     <aside class="side-panel">
       <section class="plant-card">
         <h3>Ferien-Pflanze</h3>
@@ -38,7 +39,7 @@
             <div class="stem" id="plantStem"></div>
             <div class="leaf leaf-left"></div>
             <div class="leaf leaf-right"></div>
-            <div class="flower" id="plantFlower">🌺</div>
+            <div class="flower" id="plantFlower">🌸</div>
             <div class="pot">
               <div class="pot-lip"></div>
             </div>
@@ -61,6 +62,9 @@
           <div class="sticker" draggable="true">📣</div>
           <div class="sticker" draggable="true">🎂</div>
           <div class="sticker" draggable="true">⭐</div>
+          <div class="sticker" draggable="true">🎈</div>
+          <div class="sticker" draggable="true">📚</div>
+          <div class="sticker" draggable="true">🧪</div>
         </div>
       </section>
     </aside>
@@ -111,14 +115,14 @@
         </label>
         <label class="inline">
           <input type="checkbox" id="inpHasTest" />
-          Test/Klausur 📚
+          Test/Klausur 📝
         </label>
       </div>
 
       <div class="modal-actions">
-        <button id="btnSaveEdit">Speichern</button>
-        <button id="btnDelete">Löschen</button>
-        <button id="btnCloseEdit">Schließen</button>
+        <button id="btnSaveEdit" class="btn">Speichern</button>
+        <button id="btnDelete" class="btn btn-danger">Löschen</button>
+        <button id="btnCloseEdit" class="btn btn-light">Schließen</button>
       </div>
     </div>
   </div>
@@ -129,9 +133,9 @@
       <h2>Stundenzeiten bearbeiten</h2>
       <div id="timesEditor"></div>
       <div class="modal-actions">
-        <button id="btnTimesAdd">+ Zeile</button>
-        <button id="btnTimesSave">Speichern</button>
-        <button id="btnTimesCancel">Abbrechen</button>
+        <button id="btnTimesAdd" class="btn btn-light">+ Zeile</button>
+        <button id="btnTimesSave" class="btn">Speichern</button>
+        <button id="btnTimesCancel" class="btn btn-light">Abbrechen</button>
       </div>
     </div>
   </div>
