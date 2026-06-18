@@ -1,6 +1,6 @@
-// ------- Konfiguration -------
+// ---------- Konfiguration ----------
 const DAYS = ["Mo", "Di", "Mi", "Do", "Fr"];
-const TIMES = [
+const DEFAULT_TIMES = [
   "08:00–08:45",
   "08:50–09:35",
   "09:50–10:35",
@@ -9,44 +9,85 @@ const TIMES = [
   "12:20–13:05"
 ];
 
-// Seed-Daten für Demo – werden beim ersten Start in LocalStorage gelegt
-const SEED_CARDS = [
-  // dayIndex: 0=Mo, 4=Fr | timeIndex: 0..(TIMES.length-1)
-  { id: uid(), dayIndex: 0, timeIndex: 0, subject: "Mathe", teacher: "Fr. Müller", room: "201", status: "normal" },
-  { id: uid(), dayIndex: 0, timeIndex: 1, subject: "Deutsch", teacher: "Hr. König", room: "105", status: "substitute" },
-  { id: uid(), dayIndex: 1, timeIndex: 2, subject: "Bio", teacher: "Fr. Li", room: "Bi2", status: "normal" },
-  { id: uid(), dayIndex: 2, timeIndex: 3, subject: "Englisch", teacher: "Fr. Brown", room: "301", status: "canceled" },
-  { id: uid(), dayIndex: 3, timeIndex: 4, subject: "Sport", teacher: "Hr. Novak", room: "Halle", status: "normal" },
-  { id: uid(), dayIndex: 4, timeIndex: 0, subject: "Kunst", teacher: "Fr. Rossi", room: "Kunstraum", status: "normal" }
-];
+const LS_CARDS = "sp_cards_v1";
+const LS_TIMES = "sp_times_v1";
+const LS_VAC  = "sp_vacation_date_v1";
 
-const LS_KEY = "ss_cards_v1";
-
-// ------- State -------
+// ---------- State ----------
+let TIMES = loadTimes() || [...DEFAULT_TIMES];
 let cards = loadCards();
 let currentEditId = null;
+let draggingSticker = null; // Emoji aus dem Regal
 
-// ------- Init -------
+// ---------- Seed-Daten ----------
+if (!cards.length) {
+  cards = [
+    mkCard("Mathe", "Fr. Müller", "201", "normal", false, 0, 0),
+    mkCard("Deutsch", "Hr. König", "105", "substitute", false, 0, 1),
+    mkCard("Bio", "Fr. Li", "Bi2", "normal", false, 1, 2),
+    mkCard("Englisch", "Fr. Brown", "301", "canceled", false, 2, 3),
+    mkCard("Sport", "Hr. Novak", "Halle", "normal", true, 3, 4),
+    mkCard("Kunst", "Fr. Rossi", "Kunstraum", "normal", false, 4, 0),
+  ];
+  saveCards();
+}
+
+// ---------- Init ----------
 document.addEventListener("DOMContentLoaded", () => {
+  // Kopfdatum/Zeit
+  updateNow();
+  setInterval(updateNow, 1000);
+
+  // Grid aufbauen + rendern
   buildGrid();
   renderAll();
 
-  document.getElementById("btnAdd").addEventListener("click", onAddCard);
-  document.getElementById("btnReset").addEventListener("click", onReset);
+  // Buttons
+  qs("#btnAddLesson").addEventListener("click", onAddCard);
+  qs("#btnReset").addEventListener("click", onReset);
 
   // Edit-Modal
-  document.getElementById("btnCloseEdit").addEventListener("click", closeEdit);
-  document.getElementById("btnSaveEdit").addEventListener("click", onSaveEdit);
-  document.getElementById("btnDelete").addEventListener("click", onDeleteCard);
+  qs("#btnCloseEdit").addEventListener("click", closeEdit);
+  qs("#btnSaveEdit").addEventListener("click", onSaveEdit);
+  qs("#btnDelete").addEventListener("click", onDeleteCard);
+
+  // Times modal
+  qs("#btnEditTimes").addEventListener("click", openTimesEditor);
+  qs("#btnTimesCancel").addEventListener("click", closeTimes);
+  qs("#btnTimesSave").addEventListener("click", saveTimesFromEditor);
+  qs("#btnTimesAdd").addEventListener("click", addTimesRow);
+
+  // Sticker Shelf Drag
+  initStickerShelf();
+
+  // Pflanze und Ferien
+  const vacInput = qs("#vacationDate");
+  const savedVac = localStorage.getItem(LS_VAC);
+  if (savedVac) vacInput.value = savedVac;
+  vacInput.addEventListener("change", updateVacation);
+  updateVacation();
 });
 
-// ------- Grid aufbauen -------
-function buildGrid() {
-  const grid = document.getElementById("grid");
+// ---------- Helpers ----------
+function qs(sel, root=document) { return root.querySelector(sel); }
+function qsa(sel, root=document) { return Array.from(root.querySelectorAll(sel)); }
+function uid() { return "c_" + Math.random().toString(36).slice(2, 10); }
+function mkCard(subject, teacher, room, status, hasTest, dayIndex, timeIndex) {
+  return { id: uid(), subject, teacher, room, status, hasTest, dayIndex, timeIndex, stickers: [] };
+}
 
-  // Bereits Kopfzeile vorhanden: Zeit, Mo..Fr (6 Zellen)
-  // Wir fügen für jede Zeit eine neue Reihe: linke Zeit-Zelle + 5 Dropzonen
-  TIMES.forEach((t) => {
+// ---------- Zeit/Datum ----------
+function updateNow() {
+  const now = new Date();
+  qs("#nowTime").textContent = now.toLocaleTimeString("de-DE");
+  qs("#todayDate").textContent = now.toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "2-digit", day: "2-digit" });
+}
+
+// ---------- Grid ----------
+function buildGrid() {
+  const grid = qs("#grid");
+  // Kopfzeile (6 Zellen) existiert bereits in HTML. Wir fügen für jede Zeit eine Reihe.
+  TIMES.forEach((t, ti) => {
     // Zeit-Spalte
     const timeCell = document.createElement("div");
     timeCell.className = "cell cell--time";
@@ -57,15 +98,16 @@ function buildGrid() {
     for (let d = 0; d < DAYS.length; d++) {
       const cell = document.createElement("div");
       cell.className = "cell";
+
       const dz = document.createElement("div");
       dz.className = "slot-dropzone";
       dz.dataset.dayIndex = d;
-      dz.dataset.timeIndex = TIMES.indexOf(t);
+      dz.dataset.timeIndex = ti;
 
-      // Drag & Drop Events
-      dz.addEventListener("dragover", onDragOver);
-      dz.addEventListener("dragleave", onDragLeave);
-      dz.addEventListener("drop", onDrop);
+      // Dropzone Events
+      dz.addEventListener("dragover", onSlotDragOver);
+      dz.addEventListener("dragleave", onSlotDragLeave);
+      dz.addEventListener("drop", onSlotDrop);
 
       cell.appendChild(dz);
       grid.appendChild(cell);
@@ -73,11 +115,11 @@ function buildGrid() {
   });
 }
 
-// ------- Render -------
 function renderAll() {
-  // Alle Dropzonen leeren
-  document.querySelectorAll(".slot-dropzone").forEach(dz => dz.innerHTML = "");
+  // Dropzonen leeren
+  qsa(".slot-dropzone").forEach(dz => dz.innerHTML = "");
 
+  // Karten platzieren
   cards.forEach(card => {
     const dz = findDropzone(card.dayIndex, card.timeIndex);
     if (!dz) return;
@@ -91,16 +133,18 @@ function createCardEl(card) {
   el.draggable = true;
   el.dataset.id = card.id;
 
-  el.addEventListener("dragstart", onDragStart);
+  el.addEventListener("dragstart", onCardDragStart);
   el.addEventListener("dblclick", () => openEdit(card.id));
 
+  // Header
   const header = document.createElement("div");
   header.className = "card-header";
 
   const title = document.createElement("div");
   title.className = "card-title";
-  title.textContent = card.subject;
+  title.textContent = card.subject || "Fach";
 
+  // Badges
   const badges = document.createElement("div");
   badges.className = "badges";
   const b = document.createElement("span");
@@ -108,20 +152,59 @@ function createCardEl(card) {
   b.textContent = statusLabel(card.status);
   badges.appendChild(b);
 
+  if (card.hasTest) {
+    const tf = document.createElement("span");
+    tf.className = "test-flag";
+    tf.textContent = "📝";
+    title.appendChild(tf);
+  }
+
   header.appendChild(title);
   header.appendChild(badges);
 
+  // Meta
   const meta = document.createElement("div");
   meta.className = "card-meta";
   const t = document.createElement("span");
-  t.textContent = `👩‍🏫 ${card.teacher || "-"}`;
+  t.className = "teacher";
+  t.textContent = card.teacher || "-";
   const r = document.createElement("span");
-  r.textContent = `🏫 ${card.room || "-"}`;
+  r.className = "room";
+  r.textContent = card.room || "-";
+  const s = document.createElement("span");
+  s.className = "status";
+  s.textContent = (card.status === "substitute" ? "Vertretung" : card.status === "canceled" ? "Ausfall" : "Normal");
   meta.appendChild(t);
   meta.appendChild(r);
+  meta.appendChild(s);
+
+  // Sticker-Leiste
+  const stickerBar = document.createElement("div");
+  stickerBar.className = "card-stickers";
+  (card.stickers || []).forEach(emoji => {
+    const chip = document.createElement("span");
+    chip.className = "card-sticker";
+    chip.textContent = emoji;
+    chip.title = "Sticker";
+    chip.draggable = false;
+    stickerBar.appendChild(chip);
+  });
 
   el.appendChild(header);
   el.appendChild(meta);
+  el.appendChild(stickerBar);
+
+  // Sticker-Drop (auf Karte)
+  el.addEventListener("dragover", (e) => {
+    if (draggingSticker) e.preventDefault();
+  });
+  el.addEventListener("drop", (e) => {
+    if (!draggingSticker) return;
+    e.preventDefault();
+    addStickerToCard(card.id, draggingSticker);
+    draggingSticker = null;
+  });
+
   return el;
 }
 
@@ -133,23 +216,26 @@ function statusLabel(s) {
   }
 }
 
-// ------- Drag & Drop -------
-let dragId = null;
+function findDropzone(dayIndex, timeIndex) {
+  return document.querySelector(`.slot-dropzone[data-day-index="${dayIndex}"][data-time-index="${timeIndex}"]`);
+}
 
-function onDragStart(e) {
+// ---------- Drag & Drop: Karten ----------
+let dragId = null;
+function onCardDragStart(e) {
   dragId = e.currentTarget.dataset.id;
   e.dataTransfer.setData("text/plain", dragId);
   e.dataTransfer.effectAllowed = "move";
 }
 
-function onDragOver(e) {
+function onSlotDragOver(e) {
   e.preventDefault();
   e.currentTarget.classList.add("dragover");
 }
-function onDragLeave(e) {
+function onSlotDragLeave(e) {
   e.currentTarget.classList.remove("dragover");
 }
-function onDrop(e) {
+function onSlotDrop(e) {
   e.preventDefault();
   const dz = e.currentTarget;
   dz.classList.remove("dragover");
@@ -166,37 +252,65 @@ function onDrop(e) {
   }
 }
 
-// ------- Editieren -------
+// ---------- Sticker Shelf ----------
+function initStickerShelf() {
+  qsa(".sticker").forEach(s => {
+    s.addEventListener("dragstart", (e) => {
+      draggingSticker = e.target.textContent.trim();
+      e.dataTransfer.setData("text/plain", draggingSticker);
+      e.dataTransfer.effectAllowed = "copy";
+    });
+    s.addEventListener("dragend", () => {
+      draggingSticker = null;
+    });
+  });
+}
+
+function addStickerToCard(cardId, emoji) {
+  const idx = cards.findIndex(c => c.id === cardId);
+  if (idx < 0) return;
+  const set = new Set(cards[idx].stickers || []);
+  set.add(emoji); // doppelte vermeiden
+  cards[idx].stickers = Array.from(set);
+  saveCards();
+  renderAll();
+}
+
+// ---------- Bearbeiten ----------
 function openEdit(id) {
   currentEditId = id;
   const card = cards.find(c => c.id === id);
   if (!card) return;
 
-  document.getElementById("inpSubject").value = card.subject || "";
-  document.getElementById("inpTeacher").value = card.teacher || "";
-  document.getElementById("inpRoom").value = card.room || "";
-  document.getElementById("inpStatus").value = card.status || "normal";
+  qs("#inpSubject").value = card.subject || "";
+  qs("#inpTeacher").value = card.teacher || "";
+  qs("#inpRoom").value = card.room || "";
+  qs("#inpStatus").value = card.status || "normal";
+  qs("#inpHasTest").checked = !!card.hasTest;
 
-  document.getElementById("editModal").classList.remove("hidden");
+  qs("#editModal").classList.remove("hidden");
 }
 function closeEdit() {
   currentEditId = null;
-  document.getElementById("editModal").classList.add("hidden");
+  qs("#editModal").classList.add("hidden");
 }
+
 function onSaveEdit() {
   if (!currentEditId) return;
   const idx = cards.findIndex(c => c.id === currentEditId);
   if (idx < 0) return;
 
-  cards[idx].subject = document.getElementById("inpSubject").value.trim();
-  cards[idx].teacher = document.getElementById("inpTeacher").value.trim();
-  cards[idx].room    = document.getElementById("inpRoom").value.trim();
-  cards[idx].status  = document.getElementById("inpStatus").value;
+  cards[idx].subject = qs("#inpSubject").value.trim();
+  cards[idx].teacher = qs("#inpTeacher").value.trim();
+  cards[idx].room    = qs("#inpRoom").value.trim();
+  cards[idx].status  = qs("#inpStatus").value;
+  cards[idx].hasTest = qs("#inpHasTest").checked;
 
   saveCards();
   renderAll();
   closeEdit();
 }
+
 function onDeleteCard() {
   if (!currentEditId) return;
   cards = cards.filter(c => c.id !== currentEditId);
@@ -205,47 +319,116 @@ function onDeleteCard() {
   closeEdit();
 }
 
-// ------- Add/Reset -------
+// ---------- Add/Reset ----------
 function onAddCard() {
-  // Standard: am Montag erste Stunde
-  const newCard = {
-    id: uid(),
-    dayIndex: 0,
-    timeIndex: 0,
-    subject: "Neues Fach",
-    teacher: "",
-    room: "",
-    status: "normal"
-  };
+  const newCard = mkCard("Neues Fach", "", "", "normal", false, 0, 0);
   cards.push(newCard);
   saveCards();
   renderAll();
 }
+
 function onReset() {
-  if (!confirm("Alles auf Ausgangszustand zurücksetzen?")) return;
-  localStorage.removeItem(LS_KEY);
-  cards = loadCards();
-  renderAll();
+  if (!confirm("Alles zurücksetzen?")) return;
+  localStorage.removeItem(LS_CARDS);
+  localStorage.removeItem(LS_TIMES);
+  localStorage.removeItem(LS_VAC);
+  TIMES = [...DEFAULT_TIMES];
+  cards = [];
+  saveCards();
+  location.reload();
 }
 
-// ------- Utilities -------
-function findDropzone(dayIndex, timeIndex) {
-  return document.querySelector(`.slot-dropzone[data-day-index="${dayIndex}"][data-time-index="${timeIndex}"]`);
-}
+// ---------- Zeiten-Editor ----------
+function openTimesEditor() {
+  const modal = qs("#timesModal");
+  const editor = qs("#timesEditor");
+  editor.innerHTML = "";
 
-function loadCards() {
-  const s = localStorage.getItem(LS_KEY);
-  if (s) {
-    try { return JSON.parse(s); } catch (_) {}
+  TIMES.forEach((t) => editor.appendChild(timesRow(t)));
+
+  modal.classList.remove("hidden");
+}
+function closeTimes() {
+  qs("#timesModal").classList.add("hidden");
+}
+function timesRow(value="") {
+  const row = document.createElement("div");
+  row.className = "times-row";
+  row.innerHTML = `
+    <input type="text" class="time-input" placeholder="z. B. 08:00–08:45" value="${value}">
+    <button class="btn btn-light btn-remove" title="Zeile entfernen">–</button>
+  `;
+  const btn = row.querySelector(".btn-remove");
+  btn.addEventListener("click", () => row.remove());
+  return row;
+}
+function addTimesRow() {
+  qs("#timesEditor").appendChild(timesRow(""));
+}
+function saveTimesFromEditor() {
+  const vals = qsa(".time-input", qs("#timesEditor")).map(i => i.value.trim()).filter(Boolean);
+  if (!vals.length) {
+    alert("Bitte mindestens eine Zeit eintragen.");
+    return;
   }
-  // Seed initial speichern
-  localStorage.setItem(LS_KEY, JSON.stringify(SEED_CARDS));
-  return JSON.parse(localStorage.getItem(LS_KEY));
+  TIMES = vals;
+  saveTimes(vals);
+
+  // Grid neu aufbauen
+  const grid = qs("#grid");
+  while (grid.children.length > 6) grid.removeChild(grid.lastChild); // alles nach Kopf
+  buildGrid();
+  // Re-map ggf. timeIndex > neues TIMES.length abfangen:
+  cards.forEach(c => { if (c.timeIndex >= TIMES.length) c.timeIndex = TIMES.length - 1; });
+  saveCards();
+  renderAll();
+
+  closeTimes();
+}
+
+// ---------- Ferien/Pflanze ----------
+function updateVacation() {
+  const input = qs("#vacationDate");
+  const dStr = input.value || "";
+  if (dStr) localStorage.setItem(LS_VAC, dStr);
+
+  const stem = qs("#plantStem");
+  const flower = qs("#plantFlower");
+  const daysEl = qs("#daysToVacation");
+
+  const today = new Date();
+  const vac = dStr ? new Date(dStr + "T00:00:00") : null;
+
+  if (!vac) {
+    stem.style.height = "16px";
+    flower.style.transform = "translateY(0)";
+    daysEl.textContent = "–";
+    return;
+  }
+
+  const diffDays = Math.ceil((vac - today) / (1000 * 60 * 60 * 24));
+  daysEl.textContent = Math.max(diffDays, 0);
+
+  const windowDays = 42; // 6 Wochen Fenster
+  const clamped = Math.max(0, Math.min(windowDays, diffDays));
+  const progress = 1 - (clamped / windowDays); // 0..1 (nahe = größer)
+
+  // Höhe 16..140px
+  const height = 16 + Math.round(progress * 124);
+  stem.style.height = height + "px";
+  flower.style.transform = `translateY(${Math.round(progress * -10)}px)`;
+}
+
+// ---------- Storage ----------
+function loadCards() {
+  try { return JSON.parse(localStorage.getItem(LS_CARDS) || "[]"); } catch (_) { return []; }
 }
 function saveCards() {
-  localStorage.setItem(LS_KEY, JSON.stringify(cards));
+  localStorage.setItem(LS_CARDS, JSON.stringify(cards));
 }
-
-function uid() {
-  return "c_" + Math.random().toString(36).slice(2, 10);
+function loadTimes() {
+  try { return JSON.parse(localStorage.getItem(LS_TIMES) || "[]"); } catch (_) { return null; }
+}
+function saveTimes(arr) {
+  localStorage.setItem(LS_TIMES, JSON.stringify(arr));
 }
