@@ -1,5 +1,8 @@
 :root {
-  /* Farben – braun/hellbraun für Plan, pink-braunes Karo im Hintergrund */
+  /* Hintergrundbild für die Seite – hier DEINE URL einsetzen */
+  --bg-image: url("PLACEHOLDER_IMAGE_URL");
+
+  /* Farben – Stundenplan in solid braun/hellbraun */
   --brown-800: #3f271a;
   --brown-700: #533525;
   --brown-600: #6b4530;
@@ -9,14 +12,10 @@
   --brown-200: #e7d6c9;
   --brown-100: #f4ebe4;
 
-  --pink-300: #ff8ec0;
-  --pink-200: #ffc1dc;
-
   --text: #2b211c;
 
   --radius-lg: 16px;
   --radius-md: 12px;
-  --radius-sm: 10px;
 
   --shadow-sm: 0 6px 16px rgba(39, 24, 15, 0.08);
   --shadow-md: 0 10px 26px rgba(39, 24, 15, 0.12);
@@ -33,14 +32,22 @@ html, body {
   color: var(--text);
   min-height: 100vh;
 
-  /* Pink-braunes Karo: zwei diagonale Layer */
+  /* Seitenhintergrund: Bild dezent, weich überlagert */
   background:
-    linear-gradient(45deg, rgba(139,94,60,0.09) 25%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(139,94,60,0.09) 75%) 0 0/36px 36px,
-    linear-gradient(45deg, rgba(255,142,192,0.14) 25%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(255,142,192,0.14) 75%) 18px 18px/36px 36px,
-    linear-gradient(90deg, #fff, #fff);
+    linear-gradient(0deg, rgba(255,255,255,0.86), rgba(255,255,255,0.86)),
+    var(--bg-image) center/cover no-repeat fixed;
 }
 
-/* Utility Buttons */
+.app-header {
+  display: grid; grid-template-columns: 1fr auto auto; align-items: center;
+  gap: 12px; padding: 12px 16px;
+  background: #fff; border-bottom: 2px solid var(--brown-200);
+  box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 10;
+}
+.brand { font-weight: 800; letter-spacing: .3px; font-size: 20px; color: var(--brown-700); }
+.now { color: var(--brown-600); font-weight: 700; }
+.now .sep { opacity: .5; margin: 0 8px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn {
   border: none; border-radius: 999px; padding: 8px 12px;
   background: linear-gradient(135deg, var(--brown-500), var(--brown-700));
@@ -56,24 +63,11 @@ html, body {
   background: linear-gradient(135deg, #c95757, #8c2f2f);
 }
 
-/* Header */
-.app-header {
-  display: grid; grid-template-columns: 1fr auto auto; align-items: center;
-  gap: 12px; padding: 12px 16px;
-  background: #fff; border-bottom: 2px solid var(--brown-200);
-  box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 10;
-}
-.brand { font-weight: 800; letter-spacing: .3px; font-size: 20px; color: var(--brown-700); }
-.now { color: var(--brown-600); font-weight: 700; }
-.now .sep { opacity: .5; margin: 0 8px; }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-/* Layout main */
 .app-main {
   display: grid; grid-template-columns: 320px 1fr; gap: 16px; padding: 16px;
 }
 
-/* Side Panel */
+/* Seitenpanel */
 .side-panel { display: grid; gap: 16px; align-content: start; }
 .plant-card, .sticker-card {
   background: #fff; border: 2px solid var(--brown-200); border-radius: var(--radius-lg); padding: 12px;
@@ -137,22 +131,24 @@ html, body {
 }
 .sticker:active { cursor: grabbing; }
 
-/* Timetable */
+/* Timetable Container (mit zusätzlichem dezenten Hintergrund) */
 .timetable {
-  background: #fff; border: 2px solid var(--brown-200);
+  background: rgba(255,255,255,0.92);
+  border: 2px solid var(--brown-200);
   border-radius: var(--radius-lg); padding: 12px; box-shadow: var(--shadow-sm);
 }
 .week-header .title {
   font-weight: 900; color: var(--brown-700); text-align: center; margin-bottom: 10px;
 }
 
+/* Grid: Zeit + Mo–Fr */
 .grid {
   display: grid;
   grid-template-columns: 110px repeat(5, 1fr);
   gap: 10px;
 }
 
-/* Kopf- und Zeitspalten im soliden Braun/Hellbraun Look */
+/* Kopf- und Zeitspalten im soliden Braun/Hellbraun */
 .cell { background: var(--brown-100); border-radius: var(--radius-md); min-height: 88px; padding: 8px; position: relative; }
 .cell--head { background: var(--brown-300); color: #3a2518; font-weight: 900; display: grid; place-items: center; min-height: 52px; }
 .cell--time { background: var(--brown-200); color: var(--brown-700); font-weight: 900; }
@@ -180,7 +176,7 @@ html, body {
 .badge.substitute { background: var(--badge-sub); }
 .badge.canceled { background: var(--badge-cancel); }
 
-/* Sticker, die auf Karten droppen */
+/* Sticker auf Karten */
 .card-stickers { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
 .card-sticker {
   display: inline-block; padding: 2px 6px; border: 2px solid var(--brown-200);
