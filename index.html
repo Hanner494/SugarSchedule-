@@ -1,0 +1,81 @@
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>SugarSchedule – Cute Purple-Pink Timetable</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bubbly Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">SugarSchedule 🍬</div>
+    <div class="controls">
+      <button id="btnAdd">+ Stunde hinzufügen</button>
+      <button id="btnReset">Zurücksetzen</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <aside class="sidebar">
+      <h3>Sticker</h3>
+      <div class="sticker-shelf" id="stickerShelf">💜 💫 🍬 🌸 ✨</div>
+      <p class="hint">Doppelklick auf eine Karte, um sie zu bearbeiten. Karten lassen sich per Drag & Drop verschieben.</p>
+    </aside>
+
+    <section class="timetable">
+      <div class="week-controls">
+        <div class="week-label">Dein Stundenplan</div>
+      </div>
+
+      <div class="grid" id="grid">
+        <!-- Kopfzeile -->
+        <div class="cell cell--time cell--head">Zeit</div>
+        <div class="cell cell--head">Mo</div>
+        <div class="cell cell--head">Di</div>
+        <div class="cell cell--head">Mi</div>
+        <div class="cell cell--head">Do</div>
+        <div class="cell cell--head">Fr</div>
+
+        <!-- Die Zeilen (Zeitspalte + 5 Tages-Spalten) werden von app.js erzeugt -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Stunde bearbeiten -->
+  <div class="modal hidden" id="editModal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2>Stunde bearbeiten</h2>
+      <label>
+        Fach
+        <input id="inpSubject" placeholder="z. B. Mathe" />
+      </label>
+      <label>
+        Lehrer:in
+        <input id="inpTeacher" placeholder="z. B. Frau Müller" />
+      </label>
+      <label>
+        Raum
+        <input id="inpRoom" placeholder="z. B. 201" />
+      </label>
+      <label>
+        Status
+        <select id="inpStatus">
+          <option value="normal">Normal</option>
+          <option value="substitute">Vertretung</option>
+          <option value="canceled">Ausfall</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button id="btnSaveEdit">Speichern</button>
+        <button id="btnDelete">Löschen</button>
+        <button id="btnCloseEdit">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
