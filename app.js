@@ -356,7 +356,7 @@ function timesRow(value="") {
   row.className = "times-row";
   row.innerHTML = `
     <input type="text" class="time-input" placeholder="z. B. 08:00–08:45" value="${value}">
-    <button class="btn btn-light btn-remove" title="Zeile entfernen">–</button>
+    <button class="btn-remove" title="Zeile entfernen">–</button>
   `;
   const btn = row.querySelector(".btn-remove");
   btn.addEventListener("click", () => row.remove());
