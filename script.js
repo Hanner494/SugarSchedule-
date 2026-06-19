@@ -12,7 +12,7 @@
   const sumExpenseEl = document.getElementById('sum-expense');
   const sumTotalEl = document.getElementById('sum-total');
 
-  const appState = { version: '0.4.0', initialized: true };
+  const appState = { version: '0.5.0', initialized: true };
   console.log('Financefrenzy gestartet.', appState);
 
   function parseEuro(value) {
