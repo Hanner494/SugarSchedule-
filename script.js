@@ -1,4 +1,4 @@
-// Summen-Logik & UI-Aktionen (weiter erweiterbar)
+// Summen-Logik & UI-Aktionen mit Überblicks-Tabelle
 (function () {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
@@ -12,7 +12,12 @@
   const sumExpenseEl = document.getElementById('sum-expense');
   const sumTotalEl = document.getElementById('sum-total');
 
-  const appState = { version: '0.5.0', initialized: true };
+  // Überblicks-Tabelle
+  const overviewIncomeEl = document.getElementById('overview-income');
+  const overviewExpenseEl = document.getElementById('overview-expense');
+  const overviewTotalEl = document.getElementById('overview-total');
+
+  const appState = { version: '0.6.0', initialized: true };
   console.log('Financefrenzy gestartet.', appState);
 
   function parseEuro(value) {
@@ -56,9 +61,17 @@
       }
     });
 
+    const total = income - expense;
+
+    // Oben in den Cards
     sumIncomeEl.textContent = formatEuro(income);
     sumExpenseEl.textContent = formatEuro(expense);
-    sumTotalEl.textContent = formatEuro(income - expense);
+    sumTotalEl.textContent = formatEuro(total);
+
+    // Unten in der Mini-Überblicks-Tabelle
+    if (overviewIncomeEl) overviewIncomeEl.textContent = formatEuro(income);
+    if (overviewExpenseEl) overviewExpenseEl.textContent = formatEuro(expense);
+    if (overviewTotalEl) overviewTotalEl.textContent = formatEuro(total);
   }
 
   function addRow() {
