@@ -4,112 +4,141 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Financefrenzy</title>
-  <!-- Bubbly Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Fonts: Bubbly Headline + runde Sans für Text -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
     <h1 class="brand">Financefrenzy</h1>
+    <p class="subtitle">Dein verspielter, klar strukturierter Finanzmanager</p>
   </header>
 
   <main class="app-main">
-    <!-- Grid-Layout: schmale Sidebars + mittiger Content -->
+    <!-- Drei-Spalten-Layout: Sidebars + Mitte -->
     <div class="layout">
       <!-- Linke Tagesslots -->
       <aside class="sidebar">
-        <h2 class="sidebar-title">Tagesslots</h2>
-        <div class="day-slots" id="left-slots">
-          <div class="day-slot" contenteditable="true" data-placeholder="Montag …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Dienstag …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Mittwoch …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Donnerstag …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Freitag …"></div>
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Tagesslots</h2>
+          </div>
+          <div class="section-body">
+            <div class="day-slots" id="left-slots">
+              <div class="day-slot" contenteditable="true" data-placeholder="Montag …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Dienstag …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Mittwoch …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Donnerstag …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Freitag …"></div>
+            </div>
+          </div>
         </div>
       </aside>
 
-      <!-- Mittig: kompakte Pastell-pinke Tabelle -->
+      <!-- Mittlerer Bereich -->
       <section class="content">
-        <div class="saldo-panel">
-          <h2 class="saldo-title">Saldo</h2>
-
-          <div class="saldo-cards">
-            <div class="saldo-card">
-              <span>Einnahmen</span>
-              <strong id="sum-income">0,00 €</strong>
-            </div>
-            <div class="saldo-card">
-              <span>Ausgaben</span>
-              <strong id="sum-expense">0,00 €</strong>
-            </div>
-            <div class="saldo-card total">
-              <span>Gesamtsaldo</span>
-              <strong id="sum-total">0,00 €</strong>
+        <!-- Saldo-Übersicht -->
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Saldo</h2>
+            <p class="section-desc">Kurzer Überblick über Einnahmen, Ausgaben und Gesamtsaldo</p>
+          </div>
+          <div class="section-body">
+            <div class="saldo-cards">
+              <div class="saldo-card">
+                <span>Einnahmen</span>
+                <strong id="sum-income">0,00 €</strong>
+              </div>
+              <div class="saldo-card">
+                <span>Ausgaben</span>
+                <strong id="sum-expense">0,00 €</strong>
+              </div>
+              <div class="saldo-card total">
+                <span>Gesamtsaldo</span>
+                <strong id="sum-total">0,00 €</strong>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="table-wrap">
-            <table class="saldo-table" aria-label="Saldo-Tabelle">
-              <thead>
-                <tr>
-                  <th>Datum</th>
-                  <th>Beschreibung</th>
-                  <th>Typ</th>
-                  <th class="amount-col">Betrag (€)</th>
-                </tr>
-              </thead>
-              <tbody id="saldo-rows">
-                <tr>
-                  <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
-                  <td contenteditable="true" data-placeholder="Beschreibung …"></td>
-                  <td>
-                    <select>
-                      <option value="income">Einnahme</option>
-                      <option value="expense">Ausgabe</option>
-                    </select>
-                  </td>
-                  <td contenteditable="true" data-placeholder="0,00"></td>
-                </tr>
-                <tr>
-                  <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
-                  <td contenteditable="true" data-placeholder="Beschreibung …"></td>
-                  <td>
-                    <select>
-                      <option value="income">Einnahme</option>
-                      <option value="expense">Ausgabe</option>
-                    </select>
-                  </td>
-                  <td contenteditable="true" data-placeholder="0,00"></td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Tabelle -->
+        <div class="section">
+          <div class="section-header">
+            <h3 class="section-title">Buchungen</h3>
+            <p class="section-desc">Füge Zeilen hinzu und bearbeite Felder direkt in der Tabelle</p>
           </div>
+          <div class="section-body">
+            <div class="table-wrap">
+              <table class="saldo-table" aria-label="Saldo-Tabelle">
+                <thead>
+                  <tr>
+                    <th>Datum</th>
+                    <th>Beschreibung</th>
+                    <th>Typ</th>
+                    <th class="amount-col">Betrag (€)</th>
+                  </tr>
+                </thead>
+                <tbody id="saldo-rows">
+                  <tr>
+                    <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
+                    <td contenteditable="true" data-placeholder="Beschreibung …"></td>
+                    <td>
+                      <select>
+                        <option value="income">Einnahme</option>
+                        <option value="expense">Ausgabe</option>
+                      </select>
+                    </td>
+                    <td contenteditable="true" data-placeholder="0,00"></td>
+                  </tr>
+                  <tr>
+                    <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
+                    <td contenteditable="true" data-placeholder="Beschreibung …"></td>
+                    <td>
+                      <select>
+                        <option value="income">Einnahme</option>
+                        <option value="expense">Ausgabe</option>
+                      </select>
+                    </td>
+                    <td contenteditable="true" data-placeholder="0,00"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <div class="saldo-actions">
-            <button id="add-row" type="button" class="btn-primary">+ Zeile</button>
-            <button id="recalc" type="button" class="btn-secondary">Neu berechnen</button>
-            <button id="clear-rows" type="button" class="btn-danger">Leeren</button>
+            <div class="saldo-actions">
+              <button id="add-row" type="button" class="btn-primary">+ Zeile</button>
+              <button id="recalc" type="button" class="btn-secondary">Neu berechnen</button>
+              <button id="clear-rows" type="button" class="btn-danger">Leeren</button>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- Rechte Tagesslots -->
       <aside class="sidebar">
-        <h2 class="sidebar-title">Tagesslots</h2>
-        <div class="day-slots" id="right-slots">
-          <div class="day-slot" contenteditable="true" data-placeholder="Samstag …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Sonntag …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Notizen …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="Ziele …"></div>
-          <div class="day-slot" contenteditable="true" data-placeholder="To-dos …"></div>
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Tagesslots</h2>
+          </div>
+          <div class="section-body">
+            <div class="day-slots" id="right-slots">
+              <div class="day-slot" contenteditable="true" data-placeholder="Samstag …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Sonntag …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Notizen …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="Ziele …"></div>
+              <div class="day-slot" contenteditable="true" data-placeholder="To-dos …"></div>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
   </main>
 
   <footer class="app-footer">
-    <small>&copy; <span id="year"></span> Financefrenzy</small>
+    <small>&copy; <span id="year"></span> <strong>Financefrenzy</strong></small>
   </footer>
 
   <script src="script.js"></script>
