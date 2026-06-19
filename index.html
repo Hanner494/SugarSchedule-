@@ -1,127 +1,168 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Mint-Brauner Y2K Finanzplaner</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <title>Kawaii Finanzplaner – Tages-Tabelle</title>
     <link rel="stylesheet" href="styles.css"/>
+    <meta name="theme-color" content="#c653ff"/>
   </head>
   <body>
-    <header class="app-header">
-      <div class="app-title">
-        <span class="title-gloss">Y2K</span> Finanzplaner
+    <header class="header">
+      <div class="header-bar">
+        <h1 class="app-title">Kawaii Finanzplaner</h1>
+        <button id="resetBtn" class="icon-btn danger" title="Alles löschen">🗑️</button>
       </div>
+
+      <div class="summary">
+        <div class="sum-card">
+          <span class="sum-label">Gesamtsaldo</span>
+          <span id="grandTotal" class="sum-value">0,00 €</span>
+        </div>
+      </div>
+
       <div class="header-controls">
-        <label class="date-label">
-          Datum:
-          <input id="datePicker" type="date"/>
+        <label class="field-inline">
+          <span>Datum</span>
+          <input id="globalDate" type="date"/>
         </label>
-        <button id="todayBtn" class="btn btn-secondary">Heute</button>
-        <button id="clearAllBtn" class="btn btn-danger" title="Alle Daten löschen">Zurücksetzen</button>
+        <button id="todayBtn" class="btn pill">Heute</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="board">Tage</button>
+        <button class="tab" data-tab="add">Hinzufügen</button>
+        <button class="tab" data-tab="stickers">Sticker</button>
       </div>
     </header>
 
-    <main class="layout">
-      <section class="left-panel">
-        <div class="card add-entry">
-          <h3>Neuen Eintrag hinzufügen</h3>
-          <form id="entryForm">
-            <label>
-              Kategorie
-              <select id="categorySelect" required>
-                <option value="Taschengeld">Taschengeld</option>
-                <option value="Einkommen">Einkommen</option>
-                <option value="Steuern">Steuern</option>
-                <option value="Essen">Essen</option>
-                <option value="Auto">Auto</option>
-                <option value="Spaßausgaben">Spaßausgaben</option>
-                <option value="Freizeit">Freizeit</option>
-                <option value="Klamotten">Klamotten</option>
-              </select>
-            </label>
-
-            <div class="row2">
-              <label>
-                Betrag (€)
-                <input id="amountInput" type="number" step="0.01" min="0" placeholder="0.00" required/>
-              </label>
-              <label>
-                Datum
-                <input id="entryDateInput" type="date" />
-              </label>
-            </div>
-
-            <label>
-              Notiz
-              <input id="noteInput" type="text" placeholder="z.B. Kino, Snacks, Tank…"/>
-            </label>
-
-            <div class="btn-row">
-              <button type="submit" class="btn btn-primary">Hinzufügen</button>
-            </div>
-          </form>
+    <main class="main">
+      <!-- Tages-Tabelle -->
+      <section id="tab-board" class="tab-page active">
+        <div class="card info">
+          <p class="hint">
+            Die Tabelle ist nach Tagen gruppiert. Ziehe Einträge zwischen Tagen, um das Datum zu ändern.
+            Ziehe Sticker auf eine Zeile oder auf die Tageskarte.
+          </p>
         </div>
-
-        <div class="card stickers">
-          <h3>Sticker (Drag & Drop)</h3>
-          <div id="stickerPalette" class="sticker-palette">
-            <!-- Sticker-Buttons werden per JS generiert -->
-          </div>
-          <p class="hint">Tipp: Ziehe Sticker in eine Kategorie oder auf eine Karte.</p>
-        </div>
-
-        <div class="card totals">
-          <h3>Übersicht</h3>
-          <div class="totals-grid" id="totalsGrid">
-            <!-- Totals per Kategorie werden per JS aktualisiert -->
-          </div>
-          <div class="grand-total">
-            Gesamt: <span id="grandTotal">0,00 €</span>
-          </div>
-        </div>
+        <section id="daysWrap" class="days-wrap">
+          <!-- JS rendert hier die Tages-Sektionen mit Tabellen -->
+        </section>
       </section>
 
-      <section class="board">
-        <h2 class="board-title">Dein Board</h2>
-        <div class="columns" id="columns">
-          <!-- Kategorien/Spalten werden per JS erzeugt -->
+      <!-- Hinzufügen -->
+      <section id="tab-add" class="tab-page">
+        <form id="entryForm" class="card form-card">
+          <h2>Neuen Eintrag</h2>
+
+          <label class="field">
+            <span>Kategorie</span>
+            <select id="categorySelect" required></select>
+          </label>
+
+          <div class="row">
+            <label class="field">
+              <span>Art</span>
+              <select id="typeSelect" required>
+                <option value="income">Einnahme (+)</option>
+                <option value="expense">Ausgabe (−)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Betrag (€)</span>
+              <input id="amountInput" type="number" step="0.01" min="0" placeholder="0.00" required/>
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <span>Datum</span>
+              <input id="dateInput" type="date"/>
+            </label>
+            <label class="field">
+              <span>Notiz</span>
+              <input id="noteInput" type="text" placeholder="z.B. Bubble Tea, Bus, Bonus…"/>
+            </label>
+          </div>
+
+          <button type="submit" class="btn primary full">Hinzufügen</button>
+        </form>
+      </section>
+
+      <!-- Sticker -->
+      <section id="tab-stickers" class="tab-page">
+        <div class="card">
+          <h2>Sticker Palette</h2>
+          <div id="stickerPalette" class="sticker-palette">
+            <!-- JS rendert Sticker -->
+          </div>
+          <p class="hint">Ziehe Sticker auf eine Zeile oder auf eine Tageskarte, um alle Zeilen dieses Tages zu taggen. Tippe auf „×“, um Sticker von einer Zeile zu entfernen.</p>
         </div>
       </section>
     </main>
 
-    <footer class="app-footer">
-      <span>Speichert lokal – Daten bleiben im Browser erhalten.</span>
-      <span>Made with ✨ in Mint & Braun</span>
-    </footer>
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="board" title="Tage">📅</button>
+      <button class="nav-btn" data-tab="add" title="Hinzufügen">➕</button>
+      <button class="nav-btn" data-tab="stickers" title="Sticker">✨</button>
+    </nav>
 
-    <template id="columnTemplate">
-      <div class="column" draggable="false">
-        <div class="column-header">
-          <h3 class="col-title"></h3>
-          <div class="col-sum">Summe: <span class="sum-value">0,00 €</span></div>
-        </div>
-        <div class="drop-zone entries"></div>
-      </div>
-    </template>
-
-    <template id="entryCardTemplate">
-      <div class="entry-card" draggable="true">
-        <div class="entry-top">
-          <div class="entry-badge"></div>
-          <div class="entry-amount">+0,00 €</div>
-        </div>
-        <div class="entry-middle">
-          <div class="entry-note">Notiz</div>
-          <div class="entry-date">—</div>
-        </div>
-        <div class="entry-bottom">
-          <div class="entry-stickers"></div>
-          <div class="entry-actions">
-            <button class="icon-btn edit-btn" title="Bearbeiten">✎</button>
-            <button class="icon-btn delete-btn" title="Löschen">✕</button>
+    <!-- Templates -->
+    <template id="dayTemplate">
+      <section class="day card" data-date="">
+        <div class="day-head">
+          <div class="day-title-wrap">
+            <h3 class="day-title">2026-06-19</h3>
+            <span class="day-badge">Saldo: <span class="day-sum">0,00 €</span></span>
+          </div>
+          <div class="day-meta">
+            <span class="day-status pos">+ Plus</span>
           </div>
         </div>
-      </div>
+
+        <div class="day-drop drop-zone"></div>
+
+        <div class="table-scroll">
+          <table class="cute-table">
+            <thead>
+              <tr>
+                <th class="col-kind">Art</th>
+                <th class="col-cat">Kategorie</th>
+                <th class="col-amount">Betrag</th>
+                <th class="col-note">Notiz</th>
+                <th class="col-stickers">Sticker</th>
+                <th class="col-actions">Aktionen</th>
+              </tr>
+            </thead>
+            <tbody class="tbody">
+              <!-- Zeilen -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </template>
+
+    <template id="rowTemplate">
+      <tr class="row" draggable="true">
+        <td class="cell-kind"><span class="chip kind">+ Einnahme</span></td>
+        <td class="cell-cat">Taschengeld</td>
+        <td class="cell-amount">+0,00 €</td>
+        <td class="cell-note">—</td>
+        <td class="cell-stickers">
+          <div class="stickers drop-zone"></div>
+        </td>
+        <td class="cell-actions">
+          <button class="icon-btn tiny edit">✎</button>
+          <button class="icon-btn tiny delete">✕</button>
+        </td>
+      </tr>
+    </template>
+
+    <template id="stickerChipTemplate">
+      <span class="sticker-chip" draggable="true">
+        <span class="emoji">🎀</span>
+        <button class="remove-sticker" title="Sticker entfernen">×</button>
+      </span>
     </template>
 
     <script src="script.js"></script>
