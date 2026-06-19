@@ -13,12 +13,15 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
   color: #2a2a2a;
-  background-color: #f7e9ef; /* Pastell-rosa Grundton */
+
+  /* Pastell-rosiger Grundton + pinke Polkadots */
+  background-color: #f7e9ef;
   background-image:
     radial-gradient(#ff63b1 1.2px, transparent 1.2px),
     radial-gradient(#ff63b1 1.2px, transparent 1.2px);
   background-position: 0 0, 10px 10px;
   background-size: 20px 20px, 20px 20px;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -38,7 +41,7 @@ body {
   text-shadow: 0 2px 0 rgba(0,0,0,0.05), 0 6px 12px rgba(255,46,139,0.15);
 }
 
-/* Layout: zwei Sidebars + Mitte */
+/* Layout: schmale Sidebars + mittige Content-Zone */
 .app-main {
   max-width: 1200px;
   margin: 0 auto;
@@ -47,8 +50,8 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr minmax(0, 2fr) 1fr;
-  gap: 1rem;
+  grid-template-columns: 220px minmax(0, 1fr) 220px; /* schmale Seiten, viel Luft in der Mitte */
+  gap: 1.2rem;
 }
 
 /* Sidebar (Tagesslots) */
@@ -83,7 +86,6 @@ body {
   transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-/* Platzhalter für contenteditable Felder */
 .day-slot:empty::before,
 td[contenteditable="true"]:empty::before {
   content: attr(data-placeholder);
@@ -97,39 +99,41 @@ td[contenteditable="true"]:empty::before {
   background: #fff;
 }
 
-/* Mittlerer Inhalt: Saldo-Karte */
+/* Mittig: kompakter Pastell-pinker Bereich mit Luft (nimmt NICHT den ganzen Bildschirm ein) */
 .content {
   display: flex;
-  align-items: flex-start;
   justify-content: center;
 }
 
-.saldo-card {
+.saldo-panel {
   width: 100%;
-  background: rgba(255, 255, 255, 0.86);
-  border: 2px solid #ffd1e7;
-  border-radius: 16px;
+  max-width: 780px;                 /* → begrenzt die Breite */
+  margin: 0 auto;                   /* → zentriert */
   padding: 1rem 1rem 1.25rem;
-  box-shadow: 0 10px 24px rgba(255, 46, 139, 0.08);
+
+  background: rgba(255, 247, 252, 0.96); /* sehr helles Pink/Weiß */
+  border: 2px solid #ffd1e7;            /* Pastell-pink */
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(255, 46, 139, 0.10);
 }
 
 .saldo-title {
   font-family: "Baloo 2", cursive, system-ui, sans-serif;
   font-size: 1.8rem;
   color: #c42675;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.8rem 0;
   text-align: center;
 }
 
-/* Saldo-Kennzahlen */
-.saldo-summary {
+/* Kennzahlen-Karten */
+.saldo-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
 }
 
-.saldo-item {
+.saldo-card {
   background: #fff;
   border: 1.5px solid #ffc3df;
   border-radius: 12px;
@@ -137,53 +141,65 @@ td[contenteditable="true"]:empty::before {
   text-align: center;
 }
 
-.saldo-item span {
+.saldo-card span {
   display: block;
   font-size: 0.9rem;
   color: #7b3e5b;
 }
 
-.saldo-item strong {
+.saldo-card strong {
   font-size: 1.1rem;
   color: #2a2a2a;
 }
 
-.saldo-item.saldo-total {
+.saldo-card.total {
   border-color: #ff63b1;
   box-shadow: 0 6px 16px rgba(255, 99, 177, 0.12);
 }
 
-/* Tabelle */
-.saldo-table-wrap {
+/* Tabelle: pastell-pink, kompakt, mit Luft außen herum */
+.table-wrap {
   overflow: auto;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1.5px solid #ffc3df;
-  background: #fff;
+  background: #fff;                  /* Inhalt auf Weiß, damit gut lesbar */
 }
 
 .saldo-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 560px;
 }
 
 .saldo-table thead th {
-  background: #ffe4f0;
+  background: #ffe4f0;               /* pastell-pink Head */
   color: #7b3e5b;
-  font-weight: 600;
+  font-weight: 700;
   text-align: left;
-  padding: 0.6rem 0.7rem;
+  padding: 0.7rem 0.8rem;
   border-bottom: 1.5px solid #ffc3df;
 }
 
 .saldo-table tbody td {
-  padding: 0.6rem 0.7rem;
+  padding: 0.65rem 0.8rem;
   border-bottom: 1px solid #ffe4f0;
   vertical-align: middle;
+  color: #2a2a2a;
 }
 
-.saldo-table tbody tr:hover {
-  background: #fff8fb;
+.saldo-table tbody tr:nth-child(even) td {
+  background: #fff9fc;               /* zartes Rosa für Zebra-Effekt */
+}
+
+.saldo-table tbody tr:hover td {
+  background: #fff3f9;
+}
+
+/* Betrag rechtsbündig */
+.amount-col,
+.saldo-table tbody td:nth-child(4) {
+  text-align: right;
 }
 
 /* Contenteditable Zellen */
@@ -200,12 +216,13 @@ td[contenteditable="true"]:focus {
 
 /* Select-Feld */
 .saldo-table select {
-  padding: 0.35rem 0.4rem;
+  padding: 0.35rem 0.5rem;
   border: 1.5px solid #ffc3df;
   border-radius: 8px;
   background: #fff;
   outline: none;
   font-size: 0.95rem;
+  color: #2a2a2a;
 }
 
 /* Aktionen */
@@ -214,7 +231,7 @@ td[contenteditable="true"]:focus {
   gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: flex-end;
-  margin-top: 0.75rem;
+  margin-top: 0.85rem;
 }
 
 .btn-primary,
@@ -259,15 +276,11 @@ td[contenteditable="true"]:focus {
 }
 
 /* Responsiv */
-@media (max-width: 980px) {
+@media (max-width: 1080px) {
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* untereinander auf kleineren Geräten */
   }
-  .sidebar {
-    min-height: auto;
-    order: 2;
-  }
-  .content {
-    order: 1;
-  }
+  .sidebar { min-height: auto; }
+  .saldo-cards { grid-template-columns: 1fr; }
+  .saldo-panel { max-width: 100%; }
 }
