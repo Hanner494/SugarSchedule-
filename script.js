@@ -1,9 +1,7 @@
-// Kompakte Summen-Logik und UI-Actions
+// Summen-Logik & UI-Aktionen (weiter erweiterbar)
 (function () {
   const yearEl = document.getElementById('year');
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   const saldoRowsBody = document.getElementById('saldo-rows');
   const addRowBtn = document.getElementById('add-row');
@@ -14,10 +12,7 @@
   const sumExpenseEl = document.getElementById('sum-expense');
   const sumTotalEl = document.getElementById('sum-total');
 
-  const appState = {
-    version: '0.3.0',
-    initialized: true
-  };
+  const appState = { version: '0.4.0', initialized: true };
   console.log('Financefrenzy gestartet.', appState);
 
   function parseEuro(value) {
@@ -61,10 +56,9 @@
       }
     });
 
-    const total = income - expense;
     sumIncomeEl.textContent = formatEuro(income);
     sumExpenseEl.textContent = formatEuro(expense);
-    sumTotalEl.textContent = formatEuro(total);
+    sumTotalEl.textContent = formatEuro(income - expense);
   }
 
   function addRow() {
@@ -111,9 +105,7 @@
   saldoRowsBody.addEventListener('input', (e) => {
     const isAmountCell = e.target && e.target.closest('td') && e.target.closest('td').cellIndex === 3;
     const isTypeSelect = e.target && e.target.tagName === 'SELECT';
-    if (isAmountCell || isTypeSelect) {
-      recalcTotals();
-    }
+    if (isAmountCell || isTypeSelect) recalcTotals();
   });
 
   // Initial
