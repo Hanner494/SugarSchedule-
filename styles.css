@@ -181,7 +181,7 @@ td[contenteditable="true"]:empty::before {
   box-shadow: 0 6px 16px rgba(255, 99, 177, 0.12);
 }
 
-/* Tabelle: kompakt, mittig, pastell-pink */
+/* Haupttabelle */
 .table-wrap {
   overflow: auto;
   border-radius: 14px;
@@ -266,36 +266,4 @@ td[contenteditable="true"]:focus {
 .btn-primary {
   background: var(--pink);
   color: #fff;
-  box-shadow: 0 6px 14px rgba(255, 99, 177, 0.25);
-}
-.btn-primary:hover { opacity: 0.92; }
-.btn-primary:active { transform: translateY(1px); }
-
-.btn-secondary {
-  background: var(--pink-verysoft);
-  color: var(--text-rose);
-}
-.btn-secondary:hover { opacity: 0.95; }
-.btn-secondary:active { transform: translateY(1px); }
-
-.btn-danger {
-  background: #ff7aa5;
-  color: #fff;
-  box-shadow: 0 6px 14px rgba(255, 122, 165, 0.25);
-}
-.btn-danger:hover { opacity: 0.92; }
-.btn-danger:active { transform: translateY(1px); }
-
-/* Footer */
-.app-footer {
-  text-align: center;
-  padding: 1.2rem 0 2.2rem;
-  color: var(--text-rose-soft);
-  font-weight: 600;
-}
-
-/* Responsiv */
-@media (max-width: 980px) {
-  .layout-one-sidebar { grid-template-columns: 1fr; }
-  .saldo-cards { grid-template-columns: 1fr; }
-}
+  box-shadow: 0 6px 14px rgba
