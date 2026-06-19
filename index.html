@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Financefrenzy</title>
-  <!-- Google Font: Bubbly/Comic-Fun-Style -->
+  <!-- Bubbly Font -->
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
@@ -15,10 +15,98 @@
   </header>
 
   <main class="app-main">
-    <!-- Platzhalter für zukünftige Module (z.B. Budget, Transaktionen, Charts) -->
-    <section class="intro">
-      <p>Willkommen! Hier entsteht dein Finanzmanager. Wir erweitern Schritt für Schritt.</p>
-    </section>
+    <!-- Grid-Layout: linke Sidebar (Tagesslots) – mittlerer Content (Saldo) – rechte Sidebar (Tagesslots) -->
+    <div class="layout">
+      <!-- Linke Tagesslots -->
+      <aside class="sidebar">
+        <h2 class="sidebar-title">Tagesslots</h2>
+        <div class="day-slots" id="left-slots">
+          <div class="day-slot" contenteditable="true" data-placeholder="Montag …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Dienstag …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Mittwoch …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Donnerstag …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Freitag …"></div>
+        </div>
+      </aside>
+
+      <!-- Mittlerer Bereich: Saldo-Box + Tabelle -->
+      <section class="content">
+        <div class="saldo-card">
+          <h2 class="saldo-title">Saldo</h2>
+
+          <div class="saldo-summary">
+            <div class="saldo-item">
+              <span>Einnahmen</span>
+              <strong id="sum-income">0,00 €</strong>
+            </div>
+            <div class="saldo-item">
+              <span>Ausgaben</span>
+              <strong id="sum-expense">0,00 €</strong>
+            </div>
+            <div class="saldo-item saldo-total">
+              <span>Gesamtsaldo</span>
+              <strong id="sum-total">0,00 €</strong>
+            </div>
+          </div>
+
+          <div class="saldo-table-wrap">
+            <table class="saldo-table" aria-label="Saldo-Tabelle">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Beschreibung</th>
+                  <th>Typ</th>
+                  <th>Betrag (€)</th>
+                </tr>
+              </thead>
+              <tbody id="saldo-rows">
+                <!-- Beispielzeilen (editierbar) -->
+                <tr>
+                  <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
+                  <td contenteditable="true" data-placeholder="Beschreibung …"></td>
+                  <td>
+                    <select>
+                      <option value="income">Einnahme</option>
+                      <option value="expense">Ausgabe</option>
+                    </select>
+                  </td>
+                  <td contenteditable="true" data-placeholder="0,00"></td>
+                </tr>
+                <tr>
+                  <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
+                  <td contenteditable="true" data-placeholder="Beschreibung …"></td>
+                  <td>
+                    <select>
+                      <option value="income">Einnahme</option>
+                      <option value="expense">Ausgabe</option>
+                    </select>
+                  </td>
+                  <td contenteditable="true" data-placeholder="0,00"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="saldo-actions">
+            <button id="add-row" type="button" class="btn-primary">+ Zeile</button>
+            <button id="recalc" type="button" class="btn-secondary">Neu berechnen</button>
+            <button id="clear-rows" type="button" class="btn-danger">Leeren</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rechte Tagesslots -->
+      <aside class="sidebar">
+        <h2 class="sidebar-title">Tagesslots</h2>
+        <div class="day-slots" id="right-slots">
+          <div class="day-slot" contenteditable="true" data-placeholder="Samstag …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Sonntag …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Notizen …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="Ziele …"></div>
+          <div class="day-slot" contenteditable="true" data-placeholder="To-dos …"></div>
+        </div>
+      </aside>
+    </div>
   </main>
 
   <footer class="app-footer">
