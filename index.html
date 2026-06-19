@@ -18,21 +18,45 @@
   </header>
 
   <main class="app-main">
-    <!-- Drei-Spalten-Layout: Sidebars + Mitte -->
-    <div class="layout">
-      <!-- Linke Tagesslots -->
+    <!-- Zwei-Spalten-Layout: eine Sidebar links + Mitte -->
+    <div class="layout layout-one-sidebar">
+      <!-- Linke: vereinte Tagesslots (Montag–Sonntag) -->
       <aside class="sidebar">
         <div class="section">
           <div class="section-header">
-            <h2 class="section-title">Tagesslots</h2>
+            <h2 class="section-title">Woche</h2>
+            <p class="section-desc">Schnelle Tagesnotizen (Montag–Sonntag)</p>
           </div>
           <div class="section-body">
-            <div class="day-slots" id="left-slots">
-              <div class="day-slot" contenteditable="true" data-placeholder="Montag …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Dienstag …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Mittwoch …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Donnerstag …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Freitag …"></div>
+            <div class="week-slots" id="week-slots">
+              <div class="week-slot">
+                <div class="week-slot-title">Montag</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
+              <div class="week-slot">
+                <div class="week-slot-title">Dienstag</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
+              <div class="week-slot">
+                <div class="week-slot-title">Mittwoch</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
+              <div class="week-slot">
+                <div class="week-slot-title">Donnerstag</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
+              <div class="week-slot">
+                <div class="week-slot-title">Freitag</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
+              <div class="week-slot">
+                <div class="week-slot-title">Samstag</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
+              <div class="week-slot">
+                <div class="week-slot-title">Sonntag</div>
+                <div class="week-slot-body" contenteditable="true" data-placeholder="Einträge …"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -44,7 +68,7 @@
         <div class="section">
           <div class="section-header">
             <h2 class="section-title">Saldo</h2>
-            <p class="section-desc">Kurzer Überblick über Einnahmen, Ausgaben und Gesamtsaldo</p>
+            <p class="section-desc">Überblick über Einnahmen, Ausgaben und Gesamtsaldo</p>
           </div>
           <div class="section-body">
             <div class="saldo-cards">
@@ -116,24 +140,6 @@
           </div>
         </div>
       </section>
-
-      <!-- Rechte Tagesslots -->
-      <aside class="sidebar">
-        <div class="section">
-          <div class="section-header">
-            <h2 class="section-title">Tagesslots</h2>
-          </div>
-          <div class="section-body">
-            <div class="day-slots" id="right-slots">
-              <div class="day-slot" contenteditable="true" data-placeholder="Samstag …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Sonntag …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Notizen …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="Ziele …"></div>
-              <div class="day-slot" contenteditable="true" data-placeholder="To-dos …"></div>
-            </div>
-          </div>
-        </div>
-      </aside>
     </div>
   </main>
 
