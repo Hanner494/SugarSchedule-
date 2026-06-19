@@ -1,21 +1,17 @@
 /* Reset & Basis */
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
-}
+*::after { box-sizing: border-box; }
 
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  font-family: "Quicksand", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #2a2a2a;
 
-  /* Pastell-rosiger Grundton + pinke Polkadots */
-  background-color: #f7e9ef;
+  /* Pastellrosa + pinke Polkadots */
+  background-color: #f9eaf1;
   background-image:
     radial-gradient(#ff63b1 1.2px, transparent 1.2px),
     radial-gradient(#ff63b1 1.2px, transparent 1.2px);
@@ -26,22 +22,42 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Kopfbereich/Branding */
+/* Farben & Helfer */
+:root{
+  --pink-strong: #ff2e8b;
+  --pink: #ff63b1;
+  --pink-soft: #ffd1e7;
+  --pink-verysoft: #ffe7f2;
+  --text-rose: #b03c78;
+  --text-rose-soft: #8b4b6d;
+  --white: #ffffff;
+  --shadow: 0 12px 28px rgba(255, 46, 139, 0.10);
+}
+
+/* Kopfbereich */
 .app-header {
-  padding: 2rem 1rem 1.2rem;
+  padding: 2.2rem 1rem 1.4rem;
   text-align: center;
 }
 
 .brand {
-  font-family: "Baloo 2", cursive, system-ui, sans-serif;
-  font-size: clamp(2.2rem, 6vw, 4rem);
-  line-height: 1.1;
+  font-family: "Fredoka", system-ui, sans-serif; /* bubbly Headline */
+  font-weight: 700;
+  font-size: clamp(2.4rem, 6.5vw, 4.2rem);
+  line-height: 1.05;
   margin: 0;
-  color: #ff2e8b;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.05), 0 6px 12px rgba(255,46,139,0.15);
+  color: var(--pink-strong);
+  text-shadow: 0 2px 0 rgba(0,0,0,0.04), 0 8px 18px rgba(255,46,139,0.18);
+  letter-spacing: 0.5px;
 }
 
-/* Layout: schmale Sidebars + mittige Content-Zone */
+.subtitle {
+  margin: 0.4rem 0 0;
+  color: var(--text-rose);
+  font-weight: 500;
+}
+
+/* Hauptbereich/Layout */
 .app-main {
   max-width: 1200px;
   margin: 0 auto;
@@ -50,37 +66,56 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 220px; /* schmale Seiten, viel Luft in der Mitte */
-  gap: 1.2rem;
+  grid-template-columns: 230px minmax(0, 1fr) 230px;
+  gap: 1.4rem;
 }
+
+/* Sektionen (visuelle Unterteilung) */
+.section {
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid var(--pink-soft);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.section + .section { margin-top: 1.2rem; }
+
+.section-header {
+  background: linear-gradient(180deg, #fff2f7 0%, #ffe4f0 100%);
+  border-bottom: 2px solid var(--pink-soft);
+  padding: 0.9rem 1rem;
+}
+
+.section-title {
+  margin: 0;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--pink-strong);
+  letter-spacing: 0.3px;
+}
+
+.section-desc {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  color: var(--text-rose-soft);
+}
+
+.section-body { padding: 1rem; }
 
 /* Sidebar (Tagesslots) */
-.sidebar {
-  background: rgba(255, 255, 255, 0.7);
-  border: 2px dashed #ff8ec4;
-  border-radius: 16px;
-  padding: 1rem;
-  backdrop-filter: blur(2px);
-  min-height: 540px;
-}
-
-.sidebar-title {
-  font-family: "Baloo 2", cursive, system-ui, sans-serif;
-  font-size: 1.25rem;
-  color: #c42675;
-  margin: 0 0 0.75rem 0;
-}
+.sidebar .section { min-height: 540px; }
 
 .day-slots {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.7rem;
 }
 
 .day-slot {
-  min-height: 56px;
-  padding: 0.6rem 0.8rem;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1.5px solid #ffc3df;
+  min-height: 58px;
+  padding: 0.65rem 0.8rem;
+  background: var(--white);
+  border: 1.5px solid var(--pink-soft);
   border-radius: 12px;
   outline: none;
   transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
@@ -94,193 +129,30 @@ td[contenteditable="true"]:empty::before {
 }
 
 .day-slot:focus {
-  border-color: #ff63b1;
+  border-color: var(--pink);
   box-shadow: 0 0 0 4px rgba(255, 99, 177, 0.15);
   background: #fff;
 }
 
-/* Mittig: kompakter Pastell-pinker Bereich mit Luft (nimmt NICHT den ganzen Bildschirm ein) */
+/* Mittlerer Bereich */
 .content {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
-.saldo-panel {
-  width: 100%;
-  max-width: 780px;                 /* → begrenzt die Breite */
-  margin: 0 auto;                   /* → zentriert */
-  padding: 1rem 1rem 1.25rem;
-
-  background: rgba(255, 247, 252, 0.96); /* sehr helles Pink/Weiß */
-  border: 2px solid #ffd1e7;            /* Pastell-pink */
-  border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(255, 46, 139, 0.10);
-}
-
-.saldo-title {
-  font-family: "Baloo 2", cursive, system-ui, sans-serif;
-  font-size: 1.8rem;
-  color: #c42675;
-  margin: 0 0 0.8rem 0;
-  text-align: center;
-}
-
-/* Kennzahlen-Karten */
+/* Saldo-Karten */
 .saldo-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin-bottom: 0.9rem;
+  gap: 0.8rem;
 }
 
 .saldo-card {
-  background: #fff;
-  border: 1.5px solid #ffc3df;
-  border-radius: 12px;
-  padding: 0.6rem 0.8rem;
+  background: var(--white);
+  border: 1.5px solid var(--pink-soft);
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
   text-align: center;
 }
 
 .saldo-card span {
-  display: block;
-  font-size: 0.9rem;
-  color: #7b3e5b;
-}
-
-.saldo-card strong {
-  font-size: 1.1rem;
-  color: #2a2a2a;
-}
-
-.saldo-card.total {
-  border-color: #ff63b1;
-  box-shadow: 0 6px 16px rgba(255, 99, 177, 0.12);
-}
-
-/* Tabelle: pastell-pink, kompakt, mit Luft außen herum */
-.table-wrap {
-  overflow: auto;
-  border-radius: 14px;
-  border: 1.5px solid #ffc3df;
-  background: #fff;                  /* Inhalt auf Weiß, damit gut lesbar */
-}
-
-.saldo-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  min-width: 560px;
-}
-
-.saldo-table thead th {
-  background: #ffe4f0;               /* pastell-pink Head */
-  color: #7b3e5b;
-  font-weight: 700;
-  text-align: left;
-  padding: 0.7rem 0.8rem;
-  border-bottom: 1.5px solid #ffc3df;
-}
-
-.saldo-table tbody td {
-  padding: 0.65rem 0.8rem;
-  border-bottom: 1px solid #ffe4f0;
-  vertical-align: middle;
-  color: #2a2a2a;
-}
-
-.saldo-table tbody tr:nth-child(even) td {
-  background: #fff9fc;               /* zartes Rosa für Zebra-Effekt */
-}
-
-.saldo-table tbody tr:hover td {
-  background: #fff3f9;
-}
-
-/* Betrag rechtsbündig */
-.amount-col,
-.saldo-table tbody td:nth-child(4) {
-  text-align: right;
-}
-
-/* Contenteditable Zellen */
-td[contenteditable="true"] {
-  outline: none;
-  border-radius: 8px;
-  transition: box-shadow 0.2s ease, background 0.2s ease;
-}
-
-td[contenteditable="true"]:focus {
-  background: #fff;
-  box-shadow: inset 0 0 0 3px rgba(255, 99, 177, 0.15);
-}
-
-/* Select-Feld */
-.saldo-table select {
-  padding: 0.35rem 0.5rem;
-  border: 1.5px solid #ffc3df;
-  border-radius: 8px;
-  background: #fff;
-  outline: none;
-  font-size: 0.95rem;
-  color: #2a2a2a;
-}
-
-/* Aktionen */
-.saldo-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  margin-top: 0.85rem;
-}
-
-.btn-primary,
-.btn-secondary,
-.btn-danger {
-  padding: 0.55rem 0.9rem;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.05s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.btn-primary {
-  background: #ff63b1;
-  color: #fff;
-  box-shadow: 0 6px 14px rgba(255, 99, 177, 0.25);
-}
-.btn-primary:hover { opacity: 0.92; }
-.btn-primary:active { transform: translateY(1px); }
-
-.btn-secondary {
-  background: #ffd1e7;
-  color: #7b3e5b;
-}
-.btn-secondary:hover { opacity: 0.92; }
-.btn-secondary:active { transform: translateY(1px); }
-
-.btn-danger {
-  background: #ff7aa5;
-  color: #fff;
-  box-shadow: 0 6px 14px rgba(255, 122, 165, 0.25);
-}
-.btn-danger:hover { opacity: 0.92; }
-.btn-danger:active { transform: translateY(1px); }
-
-/* Footer */
-.app-footer {
-  text-align: center;
-  padding: 1rem 0 2rem;
-  color: #6a6a6a;
-}
-
-/* Responsiv */
-@media (max-width: 1080px) {
-  .layout {
-    grid-template-columns: 1fr; /* untereinander auf kleineren Geräten */
-  }
-  .sidebar { min-height: auto; }
-  .saldo-cards { grid-template-columns: 1fr; }
-  .saldo-panel { max-width: 100%; }
-}
