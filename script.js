@@ -1,14 +1,10 @@
-/* Moderne Mobile-Version – Mint/Braun Y2K Finanzplaner (nur HTML/CSS/JS)
-   Features:
-   - Kategorien & Summen
-   - Einnahmen/Ausgaben (+/−)
-   - Einträge anlegen, bearbeiten, löschen
-   - Drag & Drop: Karten zwischen Kategorien
-   - Sticker: Palette -> Karte oder Kategorie; Sticker entfernbar
-   - Datumsauswahl + Heute-Button
-   - LocalStorage-Persistenz
+/* Mint-Brauner Y2K Finanzplaner
+   - Nur HTML/CSS/JS
+   - Drag & Drop für Karten & Sticker
+   - Lokale Speicherung (localStorage)
 */
 
+// Kategorien/Oberlogs
 const CATEGORIES = [
   "Taschengeld",
   "Einkommen",
@@ -20,461 +16,379 @@ const CATEGORIES = [
   "Klamotten",
 ];
 
+// Y2K-Style Sticker (Emoji + Label)
 const STICKERS = [
-  "⭐","💿","🛼","📟","🛍️","🍔","⛽","🎮","🧃","🎧"
+  { id: "⭐", label: "Star" },
+  { id: "💿", label: "Disc" },
+  { id: "🛼", label: "Skate" },
+  { id: "📟", label: "Pager" },
+  { id: "🛍️", label: "Shop" },
+  { id: "🍔", label: "Snack" },
+  { id: "⛽", label: "Fuel" },
+  { id: "🎮", label: "Game" },
 ];
 
-const STORAGE_KEY = "y2k_finance_mobile_v2";
+const STORAGE_KEY = "y2k_finance_data_v1";
 
-// -------------------- State --------------------
-
+// State
 let state = {
-  entries: [
-    // Beispiel: {id, category, type: 'income'|'expense', amount, note, date, stickers:[]}
-  ],
+  entries: [], // {id, category, amount, note, date, stickers: [id,...]}
 };
 
-// -------------------- Utils --------------------
-
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 const byId = (id) => document.getElementById(id);
-const fmtEUR = (n) => (n||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"});
+const fmtEUR = (num) =>
+  (num || 0).toLocaleString("de-DE", { style: "currency", currency: "EUR" });
 
-function uid(){
-  if (crypto?.randomUUID) return crypto.randomUUID();
-  return "id-"+Math.random().toString(36).slice(2,9);
+document.addEventListener("DOMContentLoaded", init);
+
+function init() {
+  loadState();
+  buildColumns();
+  buildTotals();
+  fillTotals();
+  buildStickers();
+  bindHeader();
+  bindForm();
+  renderAllEntries();
 }
 
-// -------------------- Init --------------------
+function bindHeader() {
+  const dp = byId("datePicker");
+  const todayBtn = byId("todayBtn");
+  const clearAll = byId("clearAllBtn");
 
-document.addEventListener("DOMContentLoaded", () => {
-  load();
-  setupTabs();
-  setupBottomNav();
-  setupHeader();
-  setupForm();
-  renderCategoryOptions();
-  renderBoard();
-  renderStickerPalette();
-  updateTotals();
-});
+  const todayStr = new Date().toISOString().slice(0, 10);
+  dp.value = todayStr;
+  todayBtn.addEventListener("click", () => (dp.value = new Date().toISOString().slice(0, 10)));
 
-// -------------------- Load/Save --------------------
-
-function load(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state = JSON.parse(raw);
-    if (!state.entries) state.entries = [];
-  }catch(e){
+  clearAll.addEventListener("click", () => {
+    const ok = confirm("Alle gespeicherten Einträge wirklich löschen?");
+    if (!ok) return;
     state = { entries: [] };
-  }
-}
-function save(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-// -------------------- Header Controls --------------------
-
-function setupHeader(){
-  const gDate = byId("globalDate");
-  const today = byId("todayBtn");
-  const reset = byId("resetBtn");
-  const todayStr = new Date().toISOString().slice(0,10);
-  gDate.value = todayStr;
-  today.addEventListener("click", () => gDate.value = new Date().toISOString().slice(0,10));
-  reset.addEventListener("click", () => {
-    if (!confirm("Wirklich alle Daten löschen?")) return;
-    state.entries = [];
-    save();
-    renderBoard();
-    updateTotals();
+    saveState();
+    // Neu rendern:
+    document.querySelectorAll(".entries").forEach((el) => (el.innerHTML = ""));
+    renderAllEntries();
+    fillTotals();
   });
 }
 
-// -------------------- Tabs / Bottom Nav --------------------
-
-function setupTabs(){
-  const tabs = $$(".tab");
-  tabs.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const tab = btn.dataset.tab;
-      setActiveTab(tab);
-    });
-  });
-}
-function setupBottomNav(){
-  const navBtns = $$(".bottom-nav .nav-btn");
-  navBtns.forEach(b=>{
-    b.addEventListener("click", ()=>{
-      const tab = b.dataset.tab;
-      setActiveTab(tab);
-    });
-  });
-}
-function setActiveTab(tab){
-  // Tab Buttons
-  $$(".tab").forEach(t=>{
-    t.classList.toggle("active", t.dataset.tab===tab);
-  });
-  // Bottom Nav
-  $$(".bottom-nav .nav-btn").forEach(t=>{
-    t.classList.toggle("active", t.dataset.tab===tab);
-  });
-  // Pages
-  $$(".tab-page").forEach(p=>{
-    p.classList.toggle("active", p.id===`tab-${tab}`);
-  });
-}
-
-// -------------------- Form --------------------
-
-function renderCategoryOptions(){
-  const sel = byId("categorySelect");
-  sel.innerHTML = "";
-  CATEGORIES.forEach(c=>{
-    const opt = document.createElement("option");
-    opt.value = c; opt.textContent = c;
-    sel.appendChild(opt);
-  });
-}
-
-function setupForm(){
+function bindForm() {
   const form = byId("entryForm");
   const catSel = byId("categorySelect");
-  const typeSel = byId("typeSelect");
   const amountInput = byId("amountInput");
-  const dateInput = byId("dateInput");
   const noteInput = byId("noteInput");
-  const gDate = byId("globalDate");
+  const dateInput = byId("entryDateInput");
 
-  dateInput.value = gDate.value;
+  // Standardmäßig Datum = globaler Header-Datepicker
+  dateInput.value = byId("datePicker").value;
 
-  form.addEventListener("submit", (e)=>{
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const category = catSel.value;
-    const type = typeSel.value; // income/expense
-    const amount = parseFloat(amountInput.value);
+    const amount = parseFloat(amountInput.value || "0");
     if (isNaN(amount) || amount < 0) return alert("Bitte einen gültigen Betrag eingeben.");
-    const date = (dateInput.value || gDate.value || new Date().toISOString().slice(0,10));
     const note = (noteInput.value || "").trim();
+    const date = (dateInput.value || byId("datePicker").value || new Date().toISOString().slice(0, 10));
 
     const entry = {
-      id: uid(),
-      category, type, amount, date, note,
+      id: cryptoRandomId(),
+      category,
+      amount,
+      note,
+      date,
       stickers: [],
     };
     state.entries.push(entry);
-    save();
-    renderBoard();
-    updateTotals();
+    saveState();
+
+    addEntryToDOM(entry);
+    fillTotals();
 
     // Reset
     amountInput.value = "";
     noteInput.value = "";
-    dateInput.value = gDate.value;
-    setActiveTab("board");
+    dateInput.value = byId("datePicker").value;
   });
 }
 
-// -------------------- Board Rendering --------------------
+function cryptoRandomId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return "id-" + Math.random().toString(36).slice(2, 10);
+}
 
-function renderBoard(){
-  const wrap = byId("categories");
-  wrap.innerHTML = "";
-  CATEGORIES.forEach(cat=>{
-    const catNode = renderCategory(cat);
-    wrap.appendChild(catNode);
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = JSON.parse(raw);
+    if (!state.entries) state.entries = [];
+  } catch {
+    state = { entries: [] };
+  }
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function buildColumns() {
+  const columnsWrap = byId("columns");
+  columnsWrap.innerHTML = "";
+  const tpl = byId("columnTemplate");
+
+  CATEGORIES.forEach((name) => {
+    const node = tpl.content.cloneNode(true);
+    const col = node.querySelector(".column");
+    const title = node.querySelector(".col-title");
+    const sum = node.querySelector(".sum-value");
+    const dz = node.querySelector(".drop-zone");
+
+    title.textContent = name;
+    col.dataset.category = name;
+    dz.dataset.category = name;
+    sum.textContent = "0,00 €";
+
+    makeDropZone(dz);
+
+    columnsWrap.appendChild(node);
   });
 }
 
-function renderCategory(cat){
-  const tpl = byId("categoryTemplate");
+function buildTotals() {
+  const grid = byId("totalsGrid");
+  grid.innerHTML = "";
+  CATEGORIES.forEach((cat) => {
+    const row = document.createElement("div");
+    row.className = "total-row";
+    row.innerHTML = `
+      <span class="name">${cat}</span>
+      <span class="value" data-total="${cat}">0,00 €</span>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+function fillTotals() {
+  const categorySums = {};
+  CATEGORIES.forEach((c) => (categorySums[c] = 0));
+
+  state.entries.forEach((e) => {
+    if (categorySums[e.category] == null) categorySums[e.category] = 0;
+    // Konvention: Einkommen addiert, Ausgaben subtrahiert? 
+    // Hier: Alles wird „positiv“ gezählt pro Kategorie; die Bilanz ist Summe aller Kategorien.
+    categorySums[e.category] += e.amount;
+  });
+
+  // Update per Kategorie
+  CATEGORIES.forEach((c) => {
+    const v = categorySums[c] || 0;
+    const el = document.querySelector(`[data-total="${CSS.escape(c)}"]`);
+    if (el) el.textContent = fmtEUR(v);
+    const colSum = document.querySelector(`.column[data-category="${CSS.escape(c)}"] .sum-value`);
+    if (colSum) colSum.textContent = fmtEUR(v);
+  });
+
+  // Gesamt
+  const total = Object.values(categorySums).reduce((a, b) => a + b, 0);
+  byId("grandTotal").textContent = fmtEUR(total);
+}
+
+function renderAllEntries() {
+  // Clear all drop-zones
+  document.querySelectorAll(".entries").forEach((el) => (el.innerHTML = ""));
+  state.entries.forEach(addEntryToDOM);
+}
+
+function addEntryToDOM(entry) {
+  const dz = document.querySelector(`.drop-zone[data-category="${CSS.escape(entry.category)}"]`);
+  if (!dz) return;
+  const tpl = byId("entryCardTemplate");
   const node = tpl.content.cloneNode(true);
-  const sec = node.querySelector(".category");
-  const title = node.querySelector(".category-title");
-  const sumEl = node.querySelector(".category-sum");
-  const collapseBtn = node.querySelector(".collapse-btn");
-  const zone = node.querySelector(".entries");
-
-  sec.dataset.category = cat;
-  title.textContent = cat;
-
-  // Summe für Kategorie berechnen
-  const sum = calcCategorySum(cat);
-  sumEl.textContent = fmtEUR(sum);
-
-  // Drop Zone aktivieren
-  makeDropZone(zone, cat);
-
-  // Einträge rendern
-  const entries = state.entries.filter(e=>e.category===cat);
-  entries.forEach(e=>{
-    const card = renderEntry(e);
-    zone.appendChild(card);
-  });
-
-  // Ein/Ausklappen
-  collapseBtn.addEventListener("click", ()=>{
-    sec.classList.toggle("collapsed");
-    zone.style.display = sec.classList.contains("collapsed") ? "none" : "";
-  });
-
-  return node;
-}
-
-function calcCategorySum(cat){
-  return state.entries
-    .filter(e=>e.category===cat)
-    .reduce((acc,e)=> acc + (e.type==="income" ? e.amount : -e.amount), 0);
-}
-
-function updateCategorySum(cat){
-  const sec = $(`.category[data-category="${cssEscape(cat)}"]`);
-  if (!sec) return;
-  const sumEl = $(".category-sum", sec);
-  sumEl.textContent = fmtEUR(calcCategorySum(cat));
-}
-
-// -------------------- Entry Rendering & Actions --------------------
-
-function renderEntry(entry){
-  const tpl = byId("entryTemplate");
-  const node = tpl.content.cloneNode(true);
-  const card = node.querySelector(".entry");
-  const chip = node.querySelector(".chip");
-  const amountEl = node.querySelector(".amount");
-  const noteEl = node.querySelector(".note");
-  const dateEl = node.querySelector(".date");
-  const stickerWrap = node.querySelector(".entry-stickers");
-  const btnEdit = node.querySelector(".edit");
-  const btnDelete = node.querySelector(".delete");
+  const card = node.querySelector(".entry-card");
+  const badge = node.querySelector(".entry-badge");
+  const amountEl = node.querySelector(".entry-amount");
+  const noteEl = node.querySelector(".entry-note");
+  const dateEl = node.querySelector(".entry-date");
+  const stickersEl = node.querySelector(".entry-stickers");
+  const delBtn = node.querySelector(".delete-btn");
+  const editBtn = node.querySelector(".edit-btn");
 
   card.dataset.id = entry.id;
-  card.draggable = true;
-
-  chip.textContent = entry.type==="income" ? "+ Einnahme" : "− Ausgabe";
-  if (entry.type==="expense") chip.classList.add("neg");
-  const sign = entry.type==="income" ? "+" : "−";
-  amountEl.textContent = `${sign}${fmtEUR(entry.amount)}`;
-
+  badge.textContent = entry.category;
+  amountEl.textContent = `${entry.category === "Einkommen" ? "+" : "-"}${fmtEUR(entry.amount).replace(/\s?€/, " €")}`;
   noteEl.textContent = entry.note || "—";
   dateEl.textContent = entry.date || "—";
 
-  // existierende Sticker rendern
-  entry.stickers.forEach(s=>{
-    const el = makeStickerChip(s, entry.id);
-    stickerWrap.appendChild(el);
+  // existierende Sticker
+  entry.stickers.forEach((sid) => {
+    const s = makeStickerEl(sid);
+    s.classList.add("card-sticker");
+    stickersEl.appendChild(s);
+    makeStickerDroppable(s); // Damit Sticker auch umziehbar sind
   });
 
-  // Drag Start/End (Karte verschieben)
-  card.addEventListener("dragstart", (e)=>{
+  // Drag & Drop für Karte
+  card.addEventListener("dragstart", (e) => {
     card.classList.add("dragging");
-    e.dataTransfer.setData("application/json", JSON.stringify({kind:"entry", id: entry.id}));
+    e.dataTransfer.setData("text/plain", JSON.stringify({ type: "entry", id: entry.id }));
     e.dataTransfer.effectAllowed = "move";
   });
-  card.addEventListener("dragend", ()=>{
-    card.classList.remove("dragging");
-  });
+  card.addEventListener("dragend", () => card.classList.remove("dragging"));
 
-  // Sticker Drop Target für Karte
-  makeStickerDropTarget(stickerWrap, entry.id);
+  // Drop-Ziel für Sticker auf der Karte
+  makeStickerDropTarget(stickersEl, entry.id);
 
   // Aktionen
-  btnDelete.addEventListener("click", ()=>{
-    if (!confirm("Diesen Eintrag löschen?")) return;
-    const catBefore = entry.category;
-    state.entries = state.entries.filter(x=>x.id!==entry.id);
-    save();
-    // Karte entfernen
+  delBtn.addEventListener("click", () => {
+    const ok = confirm("Eintrag löschen?");
+    if (!ok) return;
+    state.entries = state.entries.filter((x) => x.id !== entry.id);
+    saveState();
     card.remove();
-    updateCategorySum(catBefore);
-    updateTotals();
+    fillTotals();
   });
 
-  btnEdit.addEventListener("click", ()=>{
-    editEntry(entry);
+  editBtn.addEventListener("click", () => {
+    editEntryDialog(entry);
   });
 
-  return node;
+  dz.appendChild(node);
 }
 
-function editEntry(entry){
-  const amountStr = prompt("Betrag (€):", String(entry.amount));
-  if (amountStr==null) return;
-  const n = parseFloat(amountStr);
-  if (isNaN(n)||n<0) return alert("Ungültiger Betrag.");
-  const typeStr = prompt("Art (income/expense):", entry.type);
-  if (typeStr==null) return;
-  const t = (typeStr==="income"||typeStr==="expense") ? typeStr : entry.type;
-  const noteStr = prompt("Notiz:", entry.note||"");
-  if (noteStr==null) return;
-  const dateStr = prompt("Datum (YYYY-MM-DD):", entry.date||"");
-  if (dateStr==null) return;
+function editEntryDialog(entry) {
+  const amount = prompt("Betrag (€):", String(entry.amount));
+  if (amount == null) return;
+  const nVal = parseFloat(amount);
+  if (isNaN(nVal) || nVal < 0) return alert("Ungültiger Betrag.");
+  const note = prompt("Notiz:", entry.note || "") ?? entry.note;
+  const date = prompt("Datum (YYYY-MM-DD):", entry.date || "") ?? entry.date;
 
-  entry.amount = n;
-  entry.type = t;
-  entry.note = noteStr||"";
-  entry.date = dateStr||entry.date;
+  entry.amount = nVal;
+  entry.note = note || "";
+  entry.date = date || entry.date;
 
-  save();
-  renderBoard();
-  updateTotals();
+  saveState();
+  renderAllEntries();
+  fillTotals();
 }
 
-// -------------------- Drag & Drop: Kategorien --------------------
-
-function makeDropZone(zone, cat){
-  zone.addEventListener("dragover", (e)=>{
-    // Unterstütze Sticker und Karten
-    const types = e.dataTransfer?.types || [];
-    if (types.includes("application/json")) e.preventDefault();
-    if (types.includes("text/plain")) e.preventDefault();
-    zone.classList.add("drop-over");
-  });
-  zone.addEventListener("dragleave", ()=>{
-    zone.classList.remove("drop-over");
-  });
-  zone.addEventListener("drop", (e)=>{
-    e.preventDefault();
-    zone.classList.remove("drop-over");
-
-    try{
-      const rawJson = e.dataTransfer.getData("application/json");
-      if (rawJson){
-        const data = JSON.parse(rawJson);
-        if (data.kind==="entry" && data.id){
-          // Karte verschieben
-          const entry = state.entries.find(x=>x.id===data.id);
-          if (!entry) return;
-          const oldCat = entry.category;
-          entry.category = cat;
-          save();
-          renderBoard();
-          updateCategorySum(oldCat);
-          updateCategorySum(cat);
-          updateTotals();
-          return;
-        }
-      }
-    }catch{}
-
-    // Sticker auf Kategorie: alle Karten in der Kategorie taggen
-    const rawTxt = e.dataTransfer.getData("text/plain");
-    if (rawTxt){
-      try{
-        const data = JSON.parse(rawTxt);
-        if (data.kind==="sticker" && data.sticker){
-          const affected = state.entries.filter(en=>en.category===cat);
-          affected.forEach(en=>{
-            if (!en.stickers.includes(data.sticker)) en.stickers.push(data.sticker);
-          });
-          save();
-          renderBoard();
-          updateCategorySum(cat);
-          updateTotals();
-        }
-      }catch{}
-    }
-  });
-}
-
-// -------------------- Sticker Palette & Chips --------------------
-
-function renderStickerPalette(){
+function buildStickers() {
   const pal = byId("stickerPalette");
   pal.innerHTML = "";
-  STICKERS.forEach(s=>{
-    const btn = document.createElement("button");
-    btn.className = "sticker-button";
-    btn.type = "button";
-    btn.draggable = true;
-    btn.textContent = s;
+  STICKERS.forEach((s) => {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "sticker";
+    el.draggable = true;
+    el.textContent = s.id;
 
-    btn.addEventListener("dragstart", (e)=>{
-      e.dataTransfer.setData("text/plain", JSON.stringify({kind:"sticker", sticker: s}));
+    el.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({ type: "sticker", stickerId: s.id }));
       e.dataTransfer.effectAllowed = "copy";
     });
 
-    btn.addEventListener("click", ()=>{
-      alert("Ziehe den Sticker auf eine Karte oder Kategorie.");
+    el.addEventListener("click", () => {
+      alert(`Ziehe mich auf eine Karte oder Spalte! (${s.id} ${s.label})`);
     });
 
-    pal.appendChild(btn);
+    pal.appendChild(el);
   });
 }
 
-function makeStickerDropTarget(container, entryId){
-  container.addEventListener("dragover", (e)=>{
-    const types = e.dataTransfer?.types || [];
-    if (types.includes("text/plain")) e.preventDefault();
-    container.classList.add("drop-over");
+// Sticker-Element für Karten
+function makeStickerEl(stickerId) {
+  const span = document.createElement("span");
+  span.className = "card-sticker";
+  span.draggable = true;
+  span.textContent = stickerId;
+
+  span.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", JSON.stringify({ type: "sticker-on-card", stickerId }));
+    e.dataTransfer.effectAllowed = "move";
+    // Kennzeichne ursprüngliches Sticker-Element:
+    span.dataset.dragging = "1";
+    setTimeout(() => span.removeAttribute("data-dragging"), 0);
   });
-  container.addEventListener("dragleave", ()=> container.classList.remove("drop-over"));
-  container.addEventListener("drop", (e)=>{
+
+  return span;
+}
+
+function makeStickerDroppable(stickerEl) {
+  // Karte soll Sticker aufnehmen können – bereits durch makeStickerDropTarget abgedeckt
+  // Hier optional weitere Logik. Aktuell nicht benötigt.
+}
+
+function makeDropZone(zone) {
+  zone.addEventListener("dragover", (e) => {
     e.preventDefault();
-    container.classList.remove("drop-over");
+    e.dataTransfer.dropEffect = "move";
+    zone.classList.add("drag-over");
+  });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+  zone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    zone.classList.remove("drag-over");
     const raw = e.dataTransfer.getData("text/plain");
     if (!raw) return;
     let data;
-    try{ data = JSON.parse(raw); }catch{ return; }
-    if (data.kind==="sticker" && data.sticker){
-      const entry = state.entries.find(x=>x.id===entryId);
+    try { data = JSON.parse(raw); } catch { return; }
+
+    if (data.type === "entry") {
+      // Karte in andere Kategorie verschieben
+      const entry = state.entries.find((x) => x.id === data.id);
       if (!entry) return;
-      if (!entry.stickers.includes(data.sticker)) entry.stickers.push(data.sticker);
-      save();
-      // render nur Sticker-Bereich neu:
-      container.innerHTML = "";
-      entry.stickers.forEach(s=>{
-        container.appendChild(makeStickerChip(s, entryId));
+      entry.category = zone.dataset.category;
+      saveState();
+      renderAllEntries();
+      fillTotals();
+    } else if (data.type === "sticker") {
+      // Sticker auf Spalte droppen -> alle Karten in der Spalte bekommen den Sticker
+      const cat = zone.dataset.category;
+      const affected = state.entries.filter((e2) => e2.category === cat);
+      affected.forEach((e2) => {
+        if (!e2.stickers.includes(data.stickerId)) e2.stickers.push(data.stickerId);
       });
-      updateTotals();
+      saveState();
+      renderAllEntries();
+    } else if (data.type === "sticker-on-card") {
+      // Sticker von Karte auf Spalte bewegen -> hänge Sticker an alle Karten der Spalte
+      const cat = zone.dataset.category;
+      const affected = state.entries.filter((e2) => e2.category === cat);
+      affected.forEach((e2) => {
+        if (!e2.stickers.includes(data.stickerId)) e2.stickers.push(data.stickerId);
+      });
+      saveState();
+      renderAllEntries();
     }
   });
 }
 
-function makeStickerChip(sticker, entryId){
-  const tpl = byId("stickerChipTemplate");
-  const node = tpl.content.cloneNode(true);
-  const chip = node.querySelector(".sticker-chip");
-  const emoji = node.querySelector(".emoji");
-  const removeBtn = node.querySelector(".remove-sticker");
-
-  emoji.textContent = sticker;
-
-  // Sticker zwischen Karten verschieben
-  chip.addEventListener("dragstart", (e)=>{
-    e.dataTransfer.setData("text/plain", JSON.stringify({kind:"sticker", sticker}));
-    e.dataTransfer.effectAllowed = "move";
+function makeStickerDropTarget(stickerContainer, entryId) {
+  stickerContainer.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    stickerContainer.classList.add("drag-over");
   });
+  stickerContainer.addEventListener("dragleave", () => stickerContainer.classList.remove("drag-over"));
+  stickerContainer.addEventListener("drop", (e) => {
+    e.preventDefault();
+    stickerContainer.classList.remove("drag-over");
+    const raw = e.dataTransfer.getData("text/plain");
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
 
-  // Sticker aus Karte entfernen
-  removeBtn.addEventListener("click", ()=>{
-    const entry = state.entries.find(x=>x.id===entryId);
+    const entry = state.entries.find((x) => x.id === entryId);
     if (!entry) return;
-    entry.stickers = entry.stickers.filter(s=>s!==sticker);
-    save();
-    // Chip entfernen
-    chip.remove();
+
+    if (data.type === "sticker") {
+      if (!entry.stickers.includes(data.stickerId)) entry.stickers.push(data.stickerId);
+      saveState();
+      renderAllEntries();
+    } else if (data.type === "sticker-on-card") {
+      // Sticker zwischen Karten verschieben: kein doppelter Sticker
+      if (!entry.stickers.includes(data.stickerId)) entry.stickers.push(data.stickerId);
+      saveState();
+      renderAllEntries();
+    }
   });
-
-  return node;
-}
-
-// -------------------- Totals --------------------
-
-function updateTotals(){
-  // Saldierung: Einkommen positiv, Ausgaben negativ, über alle Kategorien
-  const total = state.entries.reduce((acc, e)=> acc + (e.type==="income" ? e.amount : -e.amount), 0);
-  byId("grandTotal").textContent = fmtEUR(total);
-  // Kategorien-Summen aktualisieren
-  CATEGORIES.forEach(updateCategorySum);
-}
-
-// -------------------- Helpers --------------------
-
-function cssEscape(str){
-  // Minimal-escape für Attribute-Selektor
-  return str.replace(/["\$$/g, "\\$&");
 }
