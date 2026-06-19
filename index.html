@@ -25,7 +25,7 @@
         <div class="section">
           <div class="section-header">
             <h2 class="section-title">Woche</h2>
-            <p class="section-desc">Schnelle Tagesnotizen (Montag–Sonntag)</p>
+            <p class="section-desc">Schreibe pro Tag, was du vorhast (Montag–Sonntag)</p>
           </div>
           <div class="section-body">
             <div class="week-slots" id="week-slots">
@@ -88,7 +88,7 @@
           </div>
         </div>
 
-        <!-- Tabelle -->
+        <!-- Buchungstabelle -->
         <div class="section">
           <div class="section-header">
             <h3 class="section-title">Buchungen</h3>
@@ -139,6 +139,41 @@
             </div>
           </div>
         </div>
+
+        <!-- Neue kompakte Überblicks-Tabelle -->
+        <div class="section">
+          <div class="section-header">
+            <h3 class="section-title">Gesamtüberblick</h3>
+            <p class="section-desc">Komprimierte Übersicht über Einnahmen, Ausgaben und Saldo</p>
+          </div>
+          <div class="section-body">
+            <div class="mini-table-wrap">
+              <table class="mini-table" aria-label="Gesamtüberblick Tabelle">
+                <thead>
+                  <tr>
+                    <th>Kennzahl</th>
+                    <th class="amount-col">Betrag</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Gesamte Einnahmen</td>
+                    <td id="overview-income" class="amount">0,00 €</td>
+                  </tr>
+                  <tr>
+                    <td>Gesamte Ausgaben</td>
+                    <td id="overview-expense" class="amount">0,00 €</td>
+                  </tr>
+                  <tr class="mini-total">
+                    <td>Saldo</td>
+                    <td id="overview-total" class="amount">0,00 €</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
   </main>
