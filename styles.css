@@ -1,4 +1,4 @@
-/* Grundlegendes Reset für Konsistenz */
+/* Reset & Basis */
 *,
 *::before,
 *::after {
@@ -13,14 +13,12 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
   color: #2a2a2a;
-  background-color: #f7e9ef; /* Pastellig-rosiger Grundton ("Rosinen"/rosé Vibe) */
-  /* Polka-Dot-Hintergrund: pinke Punkte auf pastellrosa */
+  background-color: #f7e9ef; /* Pastell-rosa Grundton */
   background-image:
     radial-gradient(#ff63b1 1.2px, transparent 1.2px),
     radial-gradient(#ff63b1 1.2px, transparent 1.2px);
   background-position: 0 0, 10px 10px;
   background-size: 20px 20px, 20px 20px;
-  /* leichte Textglättung */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -31,7 +29,6 @@ body {
   text-align: center;
 }
 
-/* „Bubbly“ Font: Baloo 2 wirkt rund und freundlich */
 .brand {
   font-family: "Baloo 2", cursive, system-ui, sans-serif;
   font-size: clamp(2.2rem, 6vw, 4rem);
@@ -41,29 +38,236 @@ body {
   text-shadow: 0 2px 0 rgba(0,0,0,0.05), 0 6px 12px rgba(255,46,139,0.15);
 }
 
-/* Main-Container – vorbereitet für Erweiterungen */
+/* Layout: zwei Sidebars + Mitte */
 .app-main {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 1rem 1rem 3rem;
 }
 
-/* kleine Intro-Box, damit man etwas sieht – später ersetzen/erweitern */
-.intro {
+.layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 2fr) 1fr;
+  gap: 1rem;
+}
+
+/* Sidebar (Tagesslots) */
+.sidebar {
   background: rgba(255, 255, 255, 0.7);
   border: 2px dashed #ff8ec4;
   border-radius: 16px;
-  padding: 1rem 1.25rem;
+  padding: 1rem;
   backdrop-filter: blur(2px);
+  min-height: 540px;
 }
 
-.intro p {
-  margin: 0.25rem 0;
+.sidebar-title {
+  font-family: "Baloo 2", cursive, system-ui, sans-serif;
+  font-size: 1.25rem;
+  color: #c42675;
+  margin: 0 0 0.75rem 0;
 }
+
+.day-slots {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.day-slot {
+  min-height: 56px;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1.5px solid #ffc3df;
+  border-radius: 12px;
+  outline: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+/* Platzhalter für contenteditable Felder */
+.day-slot:empty::before,
+td[contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: #aa7d96;
+  opacity: 0.8;
+}
+
+.day-slot:focus {
+  border-color: #ff63b1;
+  box-shadow: 0 0 0 4px rgba(255, 99, 177, 0.15);
+  background: #fff;
+}
+
+/* Mittlerer Inhalt: Saldo-Karte */
+.content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.saldo-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.86);
+  border: 2px solid #ffd1e7;
+  border-radius: 16px;
+  padding: 1rem 1rem 1.25rem;
+  box-shadow: 0 10px 24px rgba(255, 46, 139, 0.08);
+}
+
+.saldo-title {
+  font-family: "Baloo 2", cursive, system-ui, sans-serif;
+  font-size: 1.8rem;
+  color: #c42675;
+  margin: 0 0 0.75rem 0;
+  text-align: center;
+}
+
+/* Saldo-Kennzahlen */
+.saldo-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.saldo-item {
+  background: #fff;
+  border: 1.5px solid #ffc3df;
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+}
+
+.saldo-item span {
+  display: block;
+  font-size: 0.9rem;
+  color: #7b3e5b;
+}
+
+.saldo-item strong {
+  font-size: 1.1rem;
+  color: #2a2a2a;
+}
+
+.saldo-item.saldo-total {
+  border-color: #ff63b1;
+  box-shadow: 0 6px 16px rgba(255, 99, 177, 0.12);
+}
+
+/* Tabelle */
+.saldo-table-wrap {
+  overflow: auto;
+  border-radius: 12px;
+  border: 1.5px solid #ffc3df;
+  background: #fff;
+}
+
+.saldo-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+
+.saldo-table thead th {
+  background: #ffe4f0;
+  color: #7b3e5b;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1.5px solid #ffc3df;
+}
+
+.saldo-table tbody td {
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid #ffe4f0;
+  vertical-align: middle;
+}
+
+.saldo-table tbody tr:hover {
+  background: #fff8fb;
+}
+
+/* Contenteditable Zellen */
+td[contenteditable="true"] {
+  outline: none;
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+}
+
+td[contenteditable="true"]:focus {
+  background: #fff;
+  box-shadow: inset 0 0 0 3px rgba(255, 99, 177, 0.15);
+}
+
+/* Select-Feld */
+.saldo-table select {
+  padding: 0.35rem 0.4rem;
+  border: 1.5px solid #ffc3df;
+  border-radius: 8px;
+  background: #fff;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+/* Aktionen */
+.saldo-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-primary {
+  background: #ff63b1;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(255, 99, 177, 0.25);
+}
+.btn-primary:hover { opacity: 0.92; }
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-secondary {
+  background: #ffd1e7;
+  color: #7b3e5b;
+}
+.btn-secondary:hover { opacity: 0.92; }
+.btn-secondary:active { transform: translateY(1px); }
+
+.btn-danger {
+  background: #ff7aa5;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(255, 122, 165, 0.25);
+}
+.btn-danger:hover { opacity: 0.92; }
+.btn-danger:active { transform: translateY(1px); }
 
 /* Footer */
 .app-footer {
   text-align: center;
   padding: 1rem 0 2rem;
   color: #6a6a6a;
+}
+
+/* Responsiv */
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    min-height: auto;
+    order: 2;
+  }
+  .content {
+    order: 1;
+  }
 }
