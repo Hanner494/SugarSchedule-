@@ -1,4 +1,4 @@
-// Summen-Logik & UI-Aktionen mit Überblicks-Tabelle
+// Summen-Logik, Glitzer-Trail & Konfetti
 (function () {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
@@ -17,9 +17,14 @@
   const overviewExpenseEl = document.getElementById('overview-expense');
   const overviewTotalEl = document.getElementById('overview-total');
 
-  const appState = { version: '0.6.0', initialized: true };
+  // Effekt-Layer
+  const sparkleLayer = document.getElementById('sparkle-layer');
+  const confettiLayer = document.getElementById('confetti-layer');
+
+  const appState = { version: '0.7.0', initialized: true };
   console.log('Financefrenzy gestartet.', appState);
 
+  /* ----- Finanzen: Berechnung ----- */
   function parseEuro(value) {
     if (!value) return 0;
     const normalized = String(value)
@@ -103,6 +108,9 @@
     tr.appendChild(tdAmount);
 
     saldoRowsBody.appendChild(tr);
+
+    // Konfetti bei neuer Zeile
+    triggerConfetti();
   }
 
   function clearRows() {
@@ -110,15 +118,62 @@
     recalcTotals();
   }
 
+  /* ----- Glitzer-Trail (Cursor) ----- */
+  let lastSparkleTime = 0;
+  window.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+    // throttle ~ alle 20ms
+    if (now - lastSparkleTime < 20) return;
+    lastSparkleTime = now;
+
+    if (!sparkleLayer) return;
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    s.style.left = (e.clientX - 4) + 'px';
+    s.style.top = (e.clientY - 4) + 'px';
+    sparkleLayer.appendChild(s);
+    setTimeout(() => s.remove(), 700);
+  });
+
+  /* ----- Pinkes Konfetti ----- */
+  function triggerConfetti() {
+    if (!confettiLayer) return;
+    const count = Math.min(80, Math.floor(window.innerWidth / 15)); // dynamisch je Breite
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      // zufällige Farbvariation
+      if (i % 3 === 0) c.classList.add('alt');
+      if (i % 5 === 0) c.classList.add('light');
+
+      const startX = Math.random() * window.innerWidth;
+      const delay = (Math.random() * 300) | 0;
+      const duration = 900 + (Math.random() * 800);
+
+      c.style.left = startX + 'px';
+      c.style.top = '-10px';
+      c.style.animationDuration = duration + 'ms';
+      c.style.animationDelay = delay + 'ms';
+      c.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+      confettiLayer.appendChild(c);
+      setTimeout(() => c.remove(), duration + delay + 200);
+    }
+  }
+
+  /* ----- Events ----- */
   if (addRowBtn) addRowBtn.addEventListener('click', addRow);
   if (clearBtn) clearBtn.addEventListener('click', clearRows);
-  if (recalcBtn) recalcBtn.addEventListener('click', recalcTotals);
+  if (recalcBtn) recalcBtn.addEventListener('click', () => { recalcTotals(); triggerConfetti(); });
 
-  // Live-Neuberechnung bei Änderungen an Betrag oder Typ
+  // Live-Neuberechnung bei Änderungen an Betrag oder Typ + Konfetti
   saldoRowsBody.addEventListener('input', (e) => {
     const isAmountCell = e.target && e.target.closest('td') && e.target.closest('td').cellIndex === 3;
     const isTypeSelect = e.target && e.target.tagName === 'SELECT';
-    if (isAmountCell || isTypeSelect) recalcTotals();
+    if (isAmountCell || isTypeSelect) {
+      recalcTotals();
+      triggerConfetti();
+    }
   });
 
   // Initial
