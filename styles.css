@@ -156,3 +156,137 @@ td[contenteditable="true"]:empty::before {
 }
 
 .saldo-card span {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--text-rose-soft);
+}
+
+.saldo-card strong {
+  font-size: 1.15rem;
+  color: #2a2a2a;
+}
+
+.saldo-card.total {
+  border-color: var(--pink);
+  box-shadow: 0 6px 16px rgba(255, 99, 177, 0.12);
+}
+
+/* Tabelle: kompakt, mittig, pastell-pink */
+.table-wrap {
+  overflow: auto;
+  border-radius: 14px;
+  border: 1.5px solid var(--pink-soft);
+  background: var(--white);
+}
+
+.saldo-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 560px;
+}
+
+.saldo-table thead th {
+  background: #ffe4f0;
+  color: var(--text-rose);
+  font-weight: 700;
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1.5px solid var(--pink-soft);
+}
+
+.saldo-table tbody td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid #ffe4f0;
+  vertical-align: middle;
+  color: #2a2a2a;
+}
+
+.saldo-table tbody tr:nth-child(even) td { background: #fff9fc; }
+.saldo-table tbody tr:hover td { background: #fff3f9; }
+
+.amount-col,
+.saldo-table tbody td:nth-child(4) { text-align: right; }
+
+/* Contenteditable Zellen */
+td[contenteditable="true"] {
+  outline: none;
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+}
+
+td[contenteditable="true"]:focus {
+  background: #fff;
+  box-shadow: inset 0 0 0 3px rgba(255, 99, 177, 0.15);
+}
+
+/* Select-Feld */
+.saldo-table select {
+  padding: 0.4rem 0.55rem;
+  border: 1.5px solid var(--pink-soft);
+  border-radius: 8px;
+  background: var(--white);
+  outline: none;
+  font-size: 0.95rem;
+  color: #2a2a2a;
+}
+
+/* Buttons */
+.saldo-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 0.95rem;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: 0.6rem 0.95rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: transform 0.05s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  font-family: "Fredoka", system-ui, sans-serif;
+}
+
+.btn-primary {
+  background: var(--pink);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(255, 99, 177, 0.25);
+}
+.btn-primary:hover { opacity: 0.92; }
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-secondary {
+  background: var(--pink-verysoft);
+  color: var(--text-rose);
+}
+.btn-secondary:hover { opacity: 0.95; }
+.btn-secondary:active { transform: translateY(1px); }
+
+.btn-danger {
+  background: #ff7aa5;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(255, 122, 165, 0.25);
+}
+.btn-danger:hover { opacity: 0.92; }
+.btn-danger:active { transform: translateY(1px); }
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 1.2rem 0 2.2rem;
+  color: var(--text-rose-soft);
+  font-weight: 600;
+}
+
+/* Responsiv */
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar .section { min-height: auto; }
+  .saldo-cards { grid-template-columns: 1fr; }
+}
