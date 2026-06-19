@@ -15,7 +15,7 @@
   </header>
 
   <main class="app-main">
-    <!-- Grid-Layout: linke Sidebar (Tagesslots) – mittlerer Content (Saldo) – rechte Sidebar (Tagesslots) -->
+    <!-- Grid-Layout: schmale Sidebars + mittiger Content -->
     <div class="layout">
       <!-- Linke Tagesslots -->
       <aside class="sidebar">
@@ -29,38 +29,37 @@
         </div>
       </aside>
 
-      <!-- Mittlerer Bereich: Saldo-Box + Tabelle -->
+      <!-- Mittig: kompakte Pastell-pinke Tabelle -->
       <section class="content">
-        <div class="saldo-card">
+        <div class="saldo-panel">
           <h2 class="saldo-title">Saldo</h2>
 
-          <div class="saldo-summary">
-            <div class="saldo-item">
+          <div class="saldo-cards">
+            <div class="saldo-card">
               <span>Einnahmen</span>
               <strong id="sum-income">0,00 €</strong>
             </div>
-            <div class="saldo-item">
+            <div class="saldo-card">
               <span>Ausgaben</span>
               <strong id="sum-expense">0,00 €</strong>
             </div>
-            <div class="saldo-item saldo-total">
+            <div class="saldo-card total">
               <span>Gesamtsaldo</span>
               <strong id="sum-total">0,00 €</strong>
             </div>
           </div>
 
-          <div class="saldo-table-wrap">
+          <div class="table-wrap">
             <table class="saldo-table" aria-label="Saldo-Tabelle">
               <thead>
                 <tr>
                   <th>Datum</th>
                   <th>Beschreibung</th>
                   <th>Typ</th>
-                  <th>Betrag (€)</th>
+                  <th class="amount-col">Betrag (€)</th>
                 </tr>
               </thead>
               <tbody id="saldo-rows">
-                <!-- Beispielzeilen (editierbar) -->
                 <tr>
                   <td contenteditable="true" data-placeholder="TT.MM.JJJJ"></td>
                   <td contenteditable="true" data-placeholder="Beschreibung …"></td>
