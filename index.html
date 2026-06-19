@@ -13,7 +13,9 @@
 </head>
 <body>
   <header class="app-header">
-    <h1 class="brand">Financefrenzy</h1>
+    <div class="brand-wrap">
+      <h1 class="brand">Financefrenzy</h1>
+    </div>
     <p class="subtitle">Dein verspielter, klar strukturierter Finanzmanager</p>
   </header>
 
@@ -140,7 +142,7 @@
           </div>
         </div>
 
-        <!-- Neue kompakte Überblicks-Tabelle -->
+        <!-- Überblicks-Tabelle -->
         <div class="section">
           <div class="section-header">
             <h3 class="section-title">Gesamtüberblick</h3>
@@ -181,6 +183,10 @@
   <footer class="app-footer">
     <small>&copy; <span id="year"></span> <strong>Financefrenzy</strong></small>
   </footer>
+
+  <!-- Glitzer-Layer und Konfetti-Container -->
+  <div id="sparkle-layer" aria-hidden="true"></div>
+  <div id="confetti-layer" aria-hidden="true"></div>
 
   <script src="script.js"></script>
 </body>
