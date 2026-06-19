@@ -1,394 +1,126 @@
-/* Mint-Brauner Y2K Finanzplaner
-   - Nur HTML/CSS/JS
-   - Drag & Drop für Karten & Sticker
-   - Lokale Speicherung (localStorage)
-*/
+:root{
+  /* Kawaii Lila-Rosa Polkadot Theme */
+  --bg:#2a0d3f;
+  --panel:#3a165b;
+  --accent:#ff93dd;   /* rosa */
+  --accent-2:#c653ff; /* lila */
+  --mint:#c9ffee;     /* frisches Pastell-Mint als Akzent */
+  --ink:#fff7ff;
+  --muted:#e9d4f4;
+  --danger:#ff6ba6;
+  --good:#b7ffcf;
 
-// Kategorien/Oberlogs
-const CATEGORIES = [
-  "Taschengeld",
-  "Einkommen",
-  "Steuern",
-  "Essen",
-  "Auto",
-  "Spaßausgaben",
-  "Freizeit",
-  "Klamotten",
-];
-
-// Y2K-Style Sticker (Emoji + Label)
-const STICKERS = [
-  { id: "⭐", label: "Star" },
-  { id: "💿", label: "Disc" },
-  { id: "🛼", label: "Skate" },
-  { id: "📟", label: "Pager" },
-  { id: "🛍️", label: "Shop" },
-  { id: "🍔", label: "Snack" },
-  { id: "⛽", label: "Fuel" },
-  { id: "🎮", label: "Game" },
-];
-
-const STORAGE_KEY = "y2k_finance_data_v1";
-
-// State
-let state = {
-  entries: [], // {id, category, amount, note, date, stickers: [id,...]}
-};
-
-const byId = (id) => document.getElementById(id);
-const fmtEUR = (num) =>
-  (num || 0).toLocaleString("de-DE", { style: "currency", currency: "EUR" });
-
-document.addEventListener("DOMContentLoaded", init);
-
-function init() {
-  loadState();
-  buildColumns();
-  buildTotals();
-  fillTotals();
-  buildStickers();
-  bindHeader();
-  bindForm();
-  renderAllEntries();
+  --shadow:0 14px 36px rgba(0,0,0,.35);
+  --radius:18px;
+  --radius-sm:12px;
+  --dot:#4b1a77; /* Polkadot-Farbe */
+  --dot2:#5d218f;
 }
 
-function bindHeader() {
-  const dp = byId("datePicker");
-  const todayBtn = byId("todayBtn");
-  const clearAll = byId("clearAllBtn");
-
-  const todayStr = new Date().toISOString().slice(0, 10);
-  dp.value = todayStr;
-  todayBtn.addEventListener("click", () => (dp.value = new Date().toISOString().slice(0, 10)));
-
-  clearAll.addEventListener("click", () => {
-    const ok = confirm("Alle gespeicherten Einträge wirklich löschen?");
-    if (!ok) return;
-    state = { entries: [] };
-    saveState();
-    // Neu rendern:
-    document.querySelectorAll(".entries").forEach((el) => (el.innerHTML = ""));
-    renderAllEntries();
-    fillTotals();
-  });
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;height:100%;
+  background:
+    radial-gradient(10px 10px at 10% 10%, var(--dot) 30%, transparent 31%) 0 0/40px 40px,
+    radial-gradient(10px 10px at 30% 30%, var(--dot2) 30%, transparent 31%) 0 0/40px 40px,
+    var(--bg);
+  color:var(--ink);
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
 }
 
-function bindForm() {
-  const form = byId("entryForm");
-  const catSel = byId("categorySelect");
-  const amountInput = byId("amountInput");
-  const noteInput = byId("noteInput");
-  const dateInput = byId("entryDateInput");
+.header{
+  position:sticky;top:0;z-index:10;
+  background:linear-gradient(180deg, rgba(255,147,221,.25) 0%, rgba(58,22,91,.9) 100%);
+  backdrop-filter: blur(8px);
+  border-bottom:1px solid rgba(255,255,255,.12);
+  padding:14px 16px 10px;
+  box-shadow:var(--shadow);
+}
+.header-bar{display:flex;align-items:center;justify-content:space-between}
+.app-title{margin:0;font-size:20px;font-weight:900;letter-spacing:.3px}
+.icon-btn{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:var(--ink);border-radius:14px;padding:10px 12px;cursor:pointer
+}
+.icon-btn.tiny{padding:6px 8px;font-size:14px}
+.icon-btn.danger{border-color:rgba(255,107,166,.6);color:#ffe1ee}
+.icon-btn:active{transform:translateY(1px)}
 
-  // Standardmäßig Datum = globaler Header-Datepicker
-  dateInput.value = byId("datePicker").value;
+.summary{margin-top:10px}
+.sum-card{
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg, rgba(255,147,221,.18) 0%, rgba(58,22,91,.9) 100%);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:16px;padding:12px 14px
+}
+.sum-label{color:var(--muted);font-size:12px}
+.sum-value{font-size:22px;font-weight:900;color:var(--good);text-shadow:0 1px 0 #000}
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const category = catSel.value;
-    const amount = parseFloat(amountInput.value || "0");
-    if (isNaN(amount) || amount < 0) return alert("Bitte einen gültigen Betrag eingeben.");
-    const note = (noteInput.value || "").trim();
-    const date = (dateInput.value || byId("datePicker").value || new Date().toISOString().slice(0, 10));
-
-    const entry = {
-      id: cryptoRandomId(),
-      category,
-      amount,
-      note,
-      date,
-      stickers: [],
-    };
-    state.entries.push(entry);
-    saveState();
-
-    addEntryToDOM(entry);
-    fillTotals();
-
-    // Reset
-    amountInput.value = "";
-    noteInput.value = "";
-    dateInput.value = byId("datePicker").value;
-  });
+.header-controls{
+  display:flex;gap:10px;align-items:flex-end;margin-top:10px;flex-wrap:wrap;
+}
+.field-inline{display:flex;flex-direction:column;gap:6px;font-size:12px}
+input[type="date"], select, input[type="text"], input[type="number"]{
+  width:100%;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);
+  background:#4a1c79;color:var(--ink);outline:none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
 }
 
-function cryptoRandomId() {
-  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return "id-" + Math.random().toString(36).slice(2, 10);
+.btn{
+  background:linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
+  color:#3a0049;border:none;border-radius:999px;padding:10px 16px;
+  font-weight:900;letter-spacing:.2px;box-shadow:var(--shadow);cursor:pointer
+}
+.btn.pill{padding:8px 14px}
+.btn.primary{background:linear-gradient(180deg, #ffd0ef 0%, #ff93dd 60%, #c653ff 100%);color:#3a0049}
+.btn.full{width:100%}
+
+.tabs{display:flex;gap:8px;margin-top:12px}
+.tab{
+  flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  color:var(--ink);border-radius:14px;padding:10px;font-weight:800
+}
+.tab.active{background:rgba(255,147,221,.25);border-color:rgba(255,255,255,.28)}
+
+.main{padding:12px 16px 90px}
+
+.card{
+  background:
+    radial-gradient(12px 12px at 14% 18%, rgba(255,255,255,.05) 30%, transparent 31%) 0 0/40px 40px,
+    radial-gradient(12px 12px at 48% 32%, rgba(255,255,255,.04) 30%, transparent 31%) 0 0/40px 40px,
+    linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(0,0,0,.12) 100%),
+    var(--panel);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:14px;
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state = JSON.parse(raw);
-    if (!state.entries) state.entries = [];
-  } catch {
-    state = { entries: [] };
-  }
+.card.info{background:linear-gradient(180deg, rgba(201,255,238,.09) 0%, rgba(58,22,91,.8) 100%);}
+
+.days-wrap{display:grid;gap:12px}
+
+.day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.day-title{margin:0;font-size:16px}
+.day-title-wrap{display:flex;align-items:center;gap:10px}
+.day-badge{
+  background:rgba(201,255,238,.18);border:1px solid rgba(201,255,238,.35);
+  padding:4px 8px;border-radius:999px;color:var(--mint);font-size:12px
 }
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+.day-status{font-weight:900}
+.day-status.pos{color:var(--good)}
+.day-status.neg{color:var(--danger)}
+
+.day-drop{
+  min-height:50px;border:2px dashed rgba(255,255,255,.2);border-radius:14px;margin-bottom:8px
 }
+.day-drop.drop-over{border-color:var(--mint);background:rgba(201,255,238,.12)}
 
-function buildColumns() {
-  const columnsWrap = byId("columns");
-  columnsWrap.innerHTML = "";
-  const tpl = byId("columnTemplate");
-
-  CATEGORIES.forEach((name) => {
-    const node = tpl.content.cloneNode(true);
-    const col = node.querySelector(".column");
-    const title = node.querySelector(".col-title");
-    const sum = node.querySelector(".sum-value");
-    const dz = node.querySelector(".drop-zone");
-
-    title.textContent = name;
-    col.dataset.category = name;
-    dz.dataset.category = name;
-    sum.textContent = "0,00 €";
-
-    makeDropZone(dz);
-
-    columnsWrap.appendChild(node);
-  });
+.table-scroll{overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.12)}
+.cute-table{width:100%;border-collapse:separate;border-spacing:0;background:rgba(255,255,255,.04)}
+.cute-table thead th{
+  position:sticky;top:0;z-index:1;
+  background:linear-gradient(180deg, rgba(255,147,221,.3) 0%, rgba(58,22,91,.95) 100%);
+  color:var(--ink);text-align:left;font-size:12px;padding:10px;border-bottom:1px solid rgba(255,255,255,.18)
 }
-
-function buildTotals() {
-  const grid = byId("totalsGrid");
-  grid.innerHTML = "";
-  CATEGORIES.forEach((cat) => {
-    const row = document.createElement("div");
-    row.className = "total-row";
-    row.innerHTML = `
-      <span class="name">${cat}</span>
-      <span class="value" data-total="${cat}">0,00 €</span>
-    `;
-    grid.appendChild(row);
-  });
-}
-
-function fillTotals() {
-  const categorySums = {};
-  CATEGORIES.forEach((c) => (categorySums[c] = 0));
-
-  state.entries.forEach((e) => {
-    if (categorySums[e.category] == null) categorySums[e.category] = 0;
-    // Konvention: Einkommen addiert, Ausgaben subtrahiert? 
-    // Hier: Alles wird „positiv“ gezählt pro Kategorie; die Bilanz ist Summe aller Kategorien.
-    categorySums[e.category] += e.amount;
-  });
-
-  // Update per Kategorie
-  CATEGORIES.forEach((c) => {
-    const v = categorySums[c] || 0;
-    const el = document.querySelector(`[data-total="${CSS.escape(c)}"]`);
-    if (el) el.textContent = fmtEUR(v);
-    const colSum = document.querySelector(`.column[data-category="${CSS.escape(c)}"] .sum-value`);
-    if (colSum) colSum.textContent = fmtEUR(v);
-  });
-
-  // Gesamt
-  const total = Object.values(categorySums).reduce((a, b) => a + b, 0);
-  byId("grandTotal").textContent = fmtEUR(total);
-}
-
-function renderAllEntries() {
-  // Clear all drop-zones
-  document.querySelectorAll(".entries").forEach((el) => (el.innerHTML = ""));
-  state.entries.forEach(addEntryToDOM);
-}
-
-function addEntryToDOM(entry) {
-  const dz = document.querySelector(`.drop-zone[data-category="${CSS.escape(entry.category)}"]`);
-  if (!dz) return;
-  const tpl = byId("entryCardTemplate");
-  const node = tpl.content.cloneNode(true);
-  const card = node.querySelector(".entry-card");
-  const badge = node.querySelector(".entry-badge");
-  const amountEl = node.querySelector(".entry-amount");
-  const noteEl = node.querySelector(".entry-note");
-  const dateEl = node.querySelector(".entry-date");
-  const stickersEl = node.querySelector(".entry-stickers");
-  const delBtn = node.querySelector(".delete-btn");
-  const editBtn = node.querySelector(".edit-btn");
-
-  card.dataset.id = entry.id;
-  badge.textContent = entry.category;
-  amountEl.textContent = `${entry.category === "Einkommen" ? "+" : "-"}${fmtEUR(entry.amount).replace(/\s?€/, " €")}`;
-  noteEl.textContent = entry.note || "—";
-  dateEl.textContent = entry.date || "—";
-
-  // existierende Sticker
-  entry.stickers.forEach((sid) => {
-    const s = makeStickerEl(sid);
-    s.classList.add("card-sticker");
-    stickersEl.appendChild(s);
-    makeStickerDroppable(s); // Damit Sticker auch umziehbar sind
-  });
-
-  // Drag & Drop für Karte
-  card.addEventListener("dragstart", (e) => {
-    card.classList.add("dragging");
-    e.dataTransfer.setData("text/plain", JSON.stringify({ type: "entry", id: entry.id }));
-    e.dataTransfer.effectAllowed = "move";
-  });
-  card.addEventListener("dragend", () => card.classList.remove("dragging"));
-
-  // Drop-Ziel für Sticker auf der Karte
-  makeStickerDropTarget(stickersEl, entry.id);
-
-  // Aktionen
-  delBtn.addEventListener("click", () => {
-    const ok = confirm("Eintrag löschen?");
-    if (!ok) return;
-    state.entries = state.entries.filter((x) => x.id !== entry.id);
-    saveState();
-    card.remove();
-    fillTotals();
-  });
-
-  editBtn.addEventListener("click", () => {
-    editEntryDialog(entry);
-  });
-
-  dz.appendChild(node);
-}
-
-function editEntryDialog(entry) {
-  const amount = prompt("Betrag (€):", String(entry.amount));
-  if (amount == null) return;
-  const nVal = parseFloat(amount);
-  if (isNaN(nVal) || nVal < 0) return alert("Ungültiger Betrag.");
-  const note = prompt("Notiz:", entry.note || "") ?? entry.note;
-  const date = prompt("Datum (YYYY-MM-DD):", entry.date || "") ?? entry.date;
-
-  entry.amount = nVal;
-  entry.note = note || "";
-  entry.date = date || entry.date;
-
-  saveState();
-  renderAllEntries();
-  fillTotals();
-}
-
-function buildStickers() {
-  const pal = byId("stickerPalette");
-  pal.innerHTML = "";
-  STICKERS.forEach((s) => {
-    const el = document.createElement("button");
-    el.type = "button";
-    el.className = "sticker";
-    el.draggable = true;
-    el.textContent = s.id;
-
-    el.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("text/plain", JSON.stringify({ type: "sticker", stickerId: s.id }));
-      e.dataTransfer.effectAllowed = "copy";
-    });
-
-    el.addEventListener("click", () => {
-      alert(`Ziehe mich auf eine Karte oder Spalte! (${s.id} ${s.label})`);
-    });
-
-    pal.appendChild(el);
-  });
-}
-
-// Sticker-Element für Karten
-function makeStickerEl(stickerId) {
-  const span = document.createElement("span");
-  span.className = "card-sticker";
-  span.draggable = true;
-  span.textContent = stickerId;
-
-  span.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/plain", JSON.stringify({ type: "sticker-on-card", stickerId }));
-    e.dataTransfer.effectAllowed = "move";
-    // Kennzeichne ursprüngliches Sticker-Element:
-    span.dataset.dragging = "1";
-    setTimeout(() => span.removeAttribute("data-dragging"), 0);
-  });
-
-  return span;
-}
-
-function makeStickerDroppable(stickerEl) {
-  // Karte soll Sticker aufnehmen können – bereits durch makeStickerDropTarget abgedeckt
-  // Hier optional weitere Logik. Aktuell nicht benötigt.
-}
-
-function makeDropZone(zone) {
-  zone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    zone.classList.add("drag-over");
-  });
-  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
-  zone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    zone.classList.remove("drag-over");
-    const raw = e.dataTransfer.getData("text/plain");
-    if (!raw) return;
-    let data;
-    try { data = JSON.parse(raw); } catch { return; }
-
-    if (data.type === "entry") {
-      // Karte in andere Kategorie verschieben
-      const entry = state.entries.find((x) => x.id === data.id);
-      if (!entry) return;
-      entry.category = zone.dataset.category;
-      saveState();
-      renderAllEntries();
-      fillTotals();
-    } else if (data.type === "sticker") {
-      // Sticker auf Spalte droppen -> alle Karten in der Spalte bekommen den Sticker
-      const cat = zone.dataset.category;
-      const affected = state.entries.filter((e2) => e2.category === cat);
-      affected.forEach((e2) => {
-        if (!e2.stickers.includes(data.stickerId)) e2.stickers.push(data.stickerId);
-      });
-      saveState();
-      renderAllEntries();
-    } else if (data.type === "sticker-on-card") {
-      // Sticker von Karte auf Spalte bewegen -> hänge Sticker an alle Karten der Spalte
-      const cat = zone.dataset.category;
-      const affected = state.entries.filter((e2) => e2.category === cat);
-      affected.forEach((e2) => {
-        if (!e2.stickers.includes(data.stickerId)) e2.stickers.push(data.stickerId);
-      });
-      saveState();
-      renderAllEntries();
-    }
-  });
-}
-
-function makeStickerDropTarget(stickerContainer, entryId) {
-  stickerContainer.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    stickerContainer.classList.add("drag-over");
-  });
-  stickerContainer.addEventListener("dragleave", () => stickerContainer.classList.remove("drag-over"));
-  stickerContainer.addEventListener("drop", (e) => {
-    e.preventDefault();
-    stickerContainer.classList.remove("drag-over");
-    const raw = e.dataTransfer.getData("text/plain");
-    if (!raw) return;
-    let data;
-    try { data = JSON.parse(raw); } catch { return; }
-
-    const entry = state.entries.find((x) => x.id === entryId);
-    if (!entry) return;
-
-    if (data.type === "sticker") {
-      if (!entry.stickers.includes(data.stickerId)) entry.stickers.push(data.stickerId);
-      saveState();
-      renderAllEntries();
-    } else if (data.type === "sticker-on-card") {
-      // Sticker zwischen Karten verschieben: kein doppelter Sticker
-      if (!entry.stickers.includes(data.stickerId)) entry.stickers.push(data.stickerId);
-      saveState();
-      renderAllEntries();
-    }
-  });
-}
+.cute-table tbody td{padding:10px;border-bottom:1px dashed rgba(255,255,255,.12);vertical
