@@ -3,112 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kawaii Finanzplaner</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Financefrenzy</title>
+  <!-- Google Font: Bubbly/Comic-Fun-Style -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="app">
-    <header class="header">
-      <div class="title">
-        <div class="badge">₿</div>
-        <h1>Finanzplaner – super cute & bubbly</h1>
-      </div>
-    </header>
+  <header class="app-header">
+    <h1 class="brand">Financefrenzy</h1>
+  </header>
 
-    <!-- Summenübersicht -->
-    <section class="summary-card" aria-label="Summenübersicht">
-      <div class="summary-item">
-        <div class="label">Gesamtsaldo</div>
-        <div class="value" id="summary-balance">€ 0,00</div>
-      </div>
-      <div class="summary-item income">
-        <div class="label">Summe Einnahmen</div>
-        <div class="value" id="summary-income">€ 0,00</div>
-      </div>
-      <div class="summary-item expense">
-        <div class="label">Summe Ausgaben</div>
-        <div class="value" id="summary-expense">€ 0,00</div>
-      </div>
+  <main class="app-main">
+    <!-- Platzhalter für zukünftige Module (z.B. Budget, Transaktionen, Charts) -->
+    <section class="intro">
+      <p>Willkommen! Hier entsteht dein Finanzmanager. Wir erweitern Schritt für Schritt.</p>
     </section>
-
-    <div class="content">
-      <section>
-        <div class="controls">
-          <div class="chip">
-            <span class="tag">🔎</span>
-            <input type="search" id="searchText" placeholder="Suche Zweck/Notiz/Kategorie..." />
-          </div>
-          <div class="chip">
-            <span class="tag">⚖️</span>
-            <select id="filterType">
-              <option value="all">Alle</option>
-              <option value="income">Nur Einnahmen</option>
-              <option value="expense">Nur Ausgaben</option>
-            </select>
-          </div>
-          <div class="chip">
-            <span class="tag">📅</span>
-            <input type="date" id="filterFrom" />
-          </div>
-          <div class="chip">
-            <span class="tag">➡️</span>
-            <input type="date" id="filterTo" />
-          </div>
-          <button class="btn secondary" id="btnClearFilters" title="Filter zurücksetzen">Filter zurücksetzen</button>
-          <button class="btn" id="btnUndo" title="Letzte Änderung rückgängig">Undo</button>
-        </div>
-
-        <div class="table-wrap" role="region" aria-label="Buchungstabelle">
-          <table>
-            <thead>
-              <tr>
-                <th>Datum</th>
-                <th>Zweck</th>
-                <th>Kategorie</th>
-                <th>Typ</th>
-                <th>Betrag</th>
-                <th>Notiz</th>
-                <th>Aktion</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-        <div class="footer-hint">Daten werden lokal gespeichert (LocalStorage). Bearbeiten/Löschen pro Eintrag.</div>
-      </section>
-
-      <aside class="notebook" aria-label="Neuen Eintrag hinzufügen">
-        <div class="notebook-header">
-          <div class="notebook-title">
-            <div class="sticker">✿</div>
-            <span>Notizblock – Neuer Eintrag</span>
-          </div>
-        </div>
-        <div class="note-body">
-          <div class="row">
-            <div class="field"><input type="date" id="dateInput" /></div>
-            <div class="field">
-              <select id="typeInput" aria-label="Typ">
-                <option value="income">Einnahme (+)</option>
-                <option value="expense">Ausgabe (−)</option>
-              </select>
-            </div>
-          </div>
-          <div class="row">
-            <div class="field"><input id="purposeInput" placeholder="Zweck (z. B. Gehalt, Miete, Kaffee)" /></div>
-            <div class="field"><input id="categoryInput" placeholder="Kategorie (z. B. Fix, Freizeit, Food)" /></div>
-          </div>
-          <div class="row-3">
-            <div class="field"><input id="amountInput" type="number" step="0.01" min="0" inputmode="decimal" placeholder="Betrag (€)" /></div>
-            <button class="btn" id="btnAdd">Hinzufügen ✨</button>
-            <button class="btn danger" id="btnClear">Felder leeren</button>
-          </div>
-          <div class="field"><textarea id="noteInput" placeholder="Notiz (optional)"></textarea></div>
-        </div>
-      </aside>
-    </div>
   </main>
 
-  <script src="./script.js" defer></script>
+  <footer class="app-footer">
+    <small>&copy; <span id="year"></span> Financefrenzy</small>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
