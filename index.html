@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Mint-Brauner Y2K Finanzplaner</title>
+    <link rel="stylesheet" href="styles.css"/>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="app-title">
+        <span class="title-gloss">Y2K</span> Finanzplaner
+      </div>
+      <div class="header-controls">
+        <label class="date-label">
+          Datum:
+          <input id="datePicker" type="date"/>
+        </label>
+        <button id="todayBtn" class="btn btn-secondary">Heute</button>
+        <button id="clearAllBtn" class="btn btn-danger" title="Alle Daten löschen">Zurücksetzen</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="left-panel">
+        <div class="card add-entry">
+          <h3>Neuen Eintrag hinzufügen</h3>
+          <form id="entryForm">
+            <label>
+              Kategorie
+              <select id="categorySelect" required>
+                <option value="Taschengeld">Taschengeld</option>
+                <option value="Einkommen">Einkommen</option>
+                <option value="Steuern">Steuern</option>
+                <option value="Essen">Essen</option>
+                <option value="Auto">Auto</option>
+                <option value="Spaßausgaben">Spaßausgaben</option>
+                <option value="Freizeit">Freizeit</option>
+                <option value="Klamotten">Klamotten</option>
+              </select>
+            </label>
+
+            <div class="row2">
+              <label>
+                Betrag (€)
+                <input id="amountInput" type="number" step="0.01" min="0" placeholder="0.00" required/>
+              </label>
+              <label>
+                Datum
+                <input id="entryDateInput" type="date" />
+              </label>
+            </div>
+
+            <label>
+              Notiz
+              <input id="noteInput" type="text" placeholder="z.B. Kino, Snacks, Tank…"/>
+            </label>
+
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">Hinzufügen</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card stickers">
+          <h3>Sticker (Drag & Drop)</h3>
+          <div id="stickerPalette" class="sticker-palette">
+            <!-- Sticker-Buttons werden per JS generiert -->
+          </div>
+          <p class="hint">Tipp: Ziehe Sticker in eine Kategorie oder auf eine Karte.</p>
+        </div>
+
+        <div class="card totals">
+          <h3>Übersicht</h3>
+          <div class="totals-grid" id="totalsGrid">
+            <!-- Totals per Kategorie werden per JS aktualisiert -->
+          </div>
+          <div class="grand-total">
+            Gesamt: <span id="grandTotal">0,00 €</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="board">
+        <h2 class="board-title">Dein Board</h2>
+        <div class="columns" id="columns">
+          <!-- Kategorien/Spalten werden per JS erzeugt -->
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Speichert lokal – Daten bleiben im Browser erhalten.</span>
+      <span>Made with ✨ in Mint & Braun</span>
+    </footer>
+
+    <template id="columnTemplate">
+      <div class="column" draggable="false">
+        <div class="column-header">
+          <h3 class="col-title"></h3>
+          <div class="col-sum">Summe: <span class="sum-value">0,00 €</span></div>
+        </div>
+        <div class="drop-zone entries"></div>
+      </div>
+    </template>
+
+    <template id="entryCardTemplate">
+      <div class="entry-card" draggable="true">
+        <div class="entry-top">
+          <div class="entry-badge"></div>
+          <div class="entry-amount">+0,00 €</div>
+        </div>
+        <div class="entry-middle">
+          <div class="entry-note">Notiz</div>
+          <div class="entry-date">—</div>
+        </div>
+        <div class="entry-bottom">
+          <div class="entry-stickers"></div>
+          <div class="entry-actions">
+            <button class="icon-btn edit-btn" title="Bearbeiten">✎</button>
+            <button class="icon-btn delete-btn" title="Löschen">✕</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
